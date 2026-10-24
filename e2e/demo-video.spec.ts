@@ -105,7 +105,7 @@ test('demo walkthrough', async ({ page }) => {
   await page.getByRole('radio', { name: 'Standard' }).check();
   await page.keyboard.press('Escape');
 
-  await caption(page, 'Zero axe violations. Works offline. No account. Your data never leaves your device.', 3600);
+  await caption(page, 'Zero axe violations. Works offline. No account. Your plans stay on your device.', 3600);
   await caption(page, 'Optional: plug in your own Claude key for custom breakdowns.', 3000);
   await caption(page, 'Foothold. Get a foothold on anything.', 3200);
 });
