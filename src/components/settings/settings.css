@@ -125,3 +125,16 @@
 .help__keys dd {
   margin: 0;
 }
+
+.settings__keycheck {
+  font-weight: 700;
+  min-height: 1.5em;
+}
+
+.settings__keycheck.is-ok {
+  color: var(--done);
+}
+
+.settings__keycheck.is-bad {
+  color: var(--energy-high);
+}

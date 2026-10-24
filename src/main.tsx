@@ -13,6 +13,15 @@ import { loadSettings } from './state/settings';
 // Apply theme/contrast before first paint to avoid a flash of the wrong theme.
 applySettingsToDocument(loadSettings());
 
+// Offline support (production only; the dev server serves files that change on every edit).
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
+      // Offline caching is a bonus; the app works online without it.
+    });
+  });
+}
+
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root element');
 

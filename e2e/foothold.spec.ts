@@ -203,3 +203,33 @@ test('everything still works with reduced motion', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /1 small win today/ })).toBeVisible();
   await expect(page.locator('.burst')).toHaveCount(0);
 });
+
+test('works offline after the first visit (service worker)', async ({ page, context }) => {
+  // Installing the worker precaches every asset; give it headroom on a busy CI box.
+  test.setTimeout(60_000);
+  await addExample(page);
+  const text = (await hero(page).textContent()) ?? '';
+  // Wait until the service worker controls the page and has precached the app.
+  await expect.poll(() => page.evaluate(async () => {
+    const reg = await navigator.serviceWorker?.getRegistration();
+    return Boolean(reg?.active && navigator.serviceWorker.controller) && (await caches.keys()).some((k) => k.startsWith('foothold-'));
+  }), { timeout: 40_000 }).toBe(true);
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: 'Foothold' })).toBeVisible();
+  await expect(hero(page)).toHaveText(text);
+  // Planning a new task needs no network either.
+  await page.getByLabel('Task or brain dump').fill('Call the dentist');
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: /See everything \(2 open\)/ }).click();
+  await context.setOffline(false);
+});
+
+test('Test key gives a clear answer (mocked Claude)', async ({ page }) => {
+  await page.route('https://api.anthropic.com/**', (route) => route.fulfill({ status: 401, body: '{}' }));
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByLabel('Anthropic API key').fill('sk-ant-api03-' + 'x'.repeat(30));
+  await page.getByRole('button', { name: 'Test key' }).click();
+  await expect(page.getByRole('dialog').getByText(/rejected the API key/)).toBeVisible();
+});

@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent } from 'react';
-import { CLAUDE_MODEL, looksLikeClaudeKey } from '../../lib/ai';
+import { CLAUDE_MODEL, looksLikeClaudeKey, testClaudeKey, type KeyCheck } from '../../lib/ai';
 import { parseImport, serializeExport } from '../../lib/storage';
 import { TEXT_SCALES, type Settings } from '../../state/settings';
 import type { AppState } from '../../state/tasks';
@@ -28,6 +28,22 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
   const announce = useAnnounce();
   const [keyDraft, setKeyDraft] = useState(settings.claudeKey);
   const [keyError, setKeyError] = useState<string | null>(null);
+  const [keyCheck, setKeyCheck] = useState<KeyCheck | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  const runKeyTest = async () => {
+    if (!looksLikeClaudeKey(keyDraft)) {
+      setKeyError('That does not look like an Anthropic key (it should start with sk-ant-).');
+      return;
+    }
+    setKeyError(null);
+    setTesting(true);
+    setKeyCheck(null);
+    const result = await testClaudeKey(keyDraft);
+    setTesting(false);
+    setKeyCheck(result);
+    if (result.ok) onChange({ claudeKey: keyDraft.trim() });
+  };
   const [importError, setImportError] = useState<string | null>(null);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const wipeRef = useRef<HTMLButtonElement>(null);
@@ -128,7 +144,13 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
             <button type="button" className="btn" onClick={saveKey}>
               Save key
             </button>
+            <button type="button" className="btn btn--quiet" onClick={() => void runKeyTest()} disabled={testing || !keyDraft.trim()}>
+              {testing ? 'Testing…' : 'Test key'}
+            </button>
           </div>
+          <p className={`settings__keycheck ${keyCheck?.ok ? 'is-ok' : keyCheck ? 'is-bad' : ''}`} role="status">
+            {keyCheck ? (keyCheck.ok ? `✓ ${keyCheck.message}` : `✗ ${keyCheck.message}. Plans will keep using offline steps.`) : ''}
+          </p>
           {keyError && (
             <p id="claude-key-error" className="settings__error" role="alert">
               {keyError}

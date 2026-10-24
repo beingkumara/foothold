@@ -46,40 +46,95 @@ export function extractSteps(reply: string): readonly StepDraft[] {
   return draftsSchema.parse(JSON.parse(reply.slice(start, end + 1)));
 }
 
+const RETRY_STATUSES = new Set([429, 529]);
+const MAX_RETRY_DELAY_MS = 2000;
+
+const friendlyStatus = (status: number): string => {
+  if (status === 401) return 'Claude rejected the API key';
+  if (status === 403) return 'This API key is not allowed to use Claude';
+  if (status === 429 || status === 529) return 'Claude is busy right now';
+  if (status === 400 || status === 404) return `Claude could not run this request (${status})`;
+  return `Claude request failed (${status})`;
+};
+
+async function callClaude(
+  apiKey: string,
+  body: Record<string, unknown>,
+  fetchImpl: typeof fetch,
+  retryDelayMs: number,
+): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    let res: Response;
+    try {
+      res = await fetchImpl(ENDPOINT, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey.trim(),
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === 'AbortError') throw new Error('Claude timed out');
+      throw new Error("Couldn't reach Claude (are you offline?)");
+    } finally {
+      clearTimeout(timer);
+    }
+    if (res.ok) return res;
+    // One polite retry for rate limits and overload, honouring retry-after (capped).
+    if (attempt === 0 && RETRY_STATUSES.has(res.status)) {
+      const header = Number(res.headers.get('retry-after'));
+      const wait = Number.isFinite(header) && header > 0 ? Math.min(header * 1000, MAX_RETRY_DELAY_MS) : retryDelayMs;
+      await new Promise((resolve) => setTimeout(resolve, wait));
+      continue;
+    }
+    throw new Error(friendlyStatus(res.status));
+  }
+}
+
 export async function breakDownWithClaude(
   title: string,
   apiKey: string,
   fetchImpl: typeof fetch = fetch,
+  retryDelayMs = 1000,
 ): Promise<readonly StepDraft[]> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const res = await callClaude(
+    apiKey,
+    {
+      model: CLAUDE_MODEL,
+      max_tokens: 600,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: `Task: ${title.slice(0, 300)}` }],
+    },
+    fetchImpl,
+    retryDelayMs,
+  );
+  const body = responseSchema.parse(await res.json());
+  const text = body.content.find((c) => c.type === 'text')?.text ?? '';
+  return extractSteps(text);
+}
+
+export interface KeyCheck {
+  readonly ok: boolean;
+  readonly message: string;
+}
+
+/** A tiny, cheap request so people (and judges) know right away whether their key works. */
+export async function testClaudeKey(apiKey: string, fetchImpl: typeof fetch = fetch): Promise<KeyCheck> {
   try {
-    const res = await fetchImpl(ENDPOINT, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey.trim(),
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 600,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: `Task: ${title.slice(0, 300)}` }],
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(res.status === 401 ? 'Claude rejected the API key' : `Claude request failed (${res.status})`);
-    }
-    const body = responseSchema.parse(await res.json());
-    const text = body.content.find((c) => c.type === 'text')?.text ?? '';
-    return extractSteps(text);
+    await callClaude(
+      apiKey,
+      { model: CLAUDE_MODEL, max_tokens: 1, messages: [{ role: 'user', content: 'ping' }] },
+      fetchImpl,
+      1000,
+    );
+    return { ok: true, message: `Your key works. New plans will be written by ${CLAUDE_MODEL}.` };
   } catch (error: unknown) {
-    if (error instanceof DOMException && error.name === 'AbortError') throw new Error('Claude timed out');
-    throw error;
-  } finally {
-    clearTimeout(timer);
+    return { ok: false, message: error instanceof Error ? error.message : 'Claude could not be reached.' };
   }
 }

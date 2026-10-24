@@ -40,3 +40,13 @@ test('sends at most MAX_AI_TASKS lines to Claude and plans the rest offline', as
   expect(result.tasks.filter((t) => t.source === 'local')).toHaveLength(2);
   expect(result.fallbackReason).toContain('first 8');
 });
+
+test('skips Claude instantly when the device is offline', async () => {
+  const claude = vi.fn();
+  const spy = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+  const result = await planFromDump('essay', 'sk-ant-x', claude);
+  expect(claude).not.toHaveBeenCalled();
+  expect(result.tasks[0].source).toBe('local');
+  expect(result.fallbackReason).toContain('offline');
+  spy.mockRestore();
+});

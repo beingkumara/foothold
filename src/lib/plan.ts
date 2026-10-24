@@ -26,6 +26,13 @@ export async function planFromDump(dump: string, apiKey: string, claude: ClaudeF
     return { tasks: titles.map((title) => ({ title, steps: breakDown(title), source: 'local' })) };
   }
 
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return {
+      tasks: titles.map((title) => ({ title, steps: breakDown(title), source: 'local' })),
+      fallbackReason: "you're offline",
+    };
+  }
+
   let fallbackReason: string | undefined;
   const aiTitles = titles.slice(0, MAX_AI_TASKS);
   const extra = titles.slice(MAX_AI_TASKS).map((title): PlannedTask => ({ title, steps: breakDown(title), source: 'local' }));
