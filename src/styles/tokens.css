@@ -1,0 +1,160 @@
+/* Foothold design tokens — warm editorial paper.
+   Energy colours are semantic and always paired with a text label + icon. */
+
+:root {
+  color-scheme: light;
+
+  --paper: oklch(96.4% 0.02 84);
+  --paper-raised: oklch(99% 0.008 84);
+  --paper-sunk: oklch(92.5% 0.025 80);
+  --ink: oklch(23% 0.025 50);
+  --ink-soft: oklch(40% 0.025 50);
+  --rule: oklch(84% 0.03 75);
+  --rule-strong: oklch(62% 0.04 60);
+
+  --accent: oklch(50% 0.15 38);
+  --accent-ink: oklch(99% 0.01 84);
+  --accent-wash: oklch(91% 0.05 50);
+  --focus-ring: oklch(48% 0.2 260);
+
+  --energy-low: oklch(48% 0.09 165);
+  --energy-low-wash: oklch(92% 0.04 165);
+  --energy-medium: oklch(50% 0.11 75);
+  --energy-medium-wash: oklch(92% 0.06 85);
+  --energy-high: oklch(50% 0.15 32);
+  --energy-high-wash: oklch(91% 0.05 40);
+  --done: oklch(46% 0.09 150);
+
+  --shadow-1: 0 1px 0 oklch(70% 0.04 70 / 0.5), 0 6px 18px -10px oklch(40% 0.05 50 / 0.35);
+  --shadow-2: 0 2px 0 oklch(70% 0.04 70 / 0.45), 0 28px 60px -30px oklch(35% 0.06 45 / 0.55);
+  --grain-opacity: 0.07;
+
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+
+  --text-scale: 1;
+  --text-sm: calc(0.9rem * var(--text-scale));
+  --text-base: calc(clamp(1rem, 0.95rem + 0.25vw, 1.125rem) * var(--text-scale));
+  --text-lg: calc(clamp(1.15rem, 1rem + 0.6vw, 1.4rem) * var(--text-scale));
+  --text-xl: calc(clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem) * var(--text-scale));
+  --text-hero: calc(clamp(1.9rem, 1.1rem + 3.4vw, 3.6rem) * var(--text-scale));
+
+  --leading: 1.55;
+  --tracking: 0;
+  --word-gap: normal;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2.25rem;
+  --space-7: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+
+  --radius-sm: 6px;
+  --radius-md: 14px;
+  --radius-lg: 28px 28px 28px 6px;
+  --border-w: 1.5px;
+
+  --duration-fast: 140ms;
+  --duration-normal: 320ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: oklch(20% 0.014 60);
+    --paper-raised: oklch(24.5% 0.016 60);
+    --paper-sunk: oklch(17% 0.012 60);
+    --ink: oklch(94% 0.015 84);
+    --ink-soft: oklch(78% 0.02 80);
+    --rule: oklch(35% 0.02 60);
+    --rule-strong: oklch(55% 0.03 65);
+    --accent: oklch(76% 0.12 48);
+    --accent-ink: oklch(20% 0.02 50);
+    --accent-wash: oklch(32% 0.05 45);
+    --focus-ring: oklch(78% 0.14 250);
+    --energy-low: oklch(78% 0.09 165);
+    --energy-low-wash: oklch(30% 0.04 165);
+    --energy-medium: oklch(82% 0.11 85);
+    --energy-medium-wash: oklch(31% 0.05 80);
+    --energy-high: oklch(76% 0.12 38);
+    --energy-high-wash: oklch(31% 0.05 38);
+    --done: oklch(78% 0.1 150);
+    --shadow-1: 0 1px 0 oklch(10% 0 0 / 0.6), 0 8px 20px -12px oklch(0% 0 0 / 0.7);
+    --shadow-2: 0 2px 0 oklch(10% 0 0 / 0.6), 0 30px 60px -30px oklch(0% 0 0 / 0.9);
+    --grain-opacity: 0.05;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: oklch(20% 0.014 60);
+  --paper-raised: oklch(24.5% 0.016 60);
+  --paper-sunk: oklch(17% 0.012 60);
+  --ink: oklch(94% 0.015 84);
+  --ink-soft: oklch(78% 0.02 80);
+  --rule: oklch(35% 0.02 60);
+  --rule-strong: oklch(55% 0.03 65);
+  --accent: oklch(76% 0.12 48);
+  --accent-ink: oklch(20% 0.02 50);
+  --accent-wash: oklch(32% 0.05 45);
+  --focus-ring: oklch(78% 0.14 250);
+  --energy-low: oklch(78% 0.09 165);
+  --energy-low-wash: oklch(30% 0.04 165);
+  --energy-medium: oklch(82% 0.11 85);
+  --energy-medium-wash: oklch(31% 0.05 80);
+  --energy-high: oklch(76% 0.12 38);
+  --energy-high-wash: oklch(31% 0.05 38);
+  --done: oklch(78% 0.1 150);
+  --shadow-1: 0 1px 0 oklch(10% 0 0 / 0.6), 0 8px 20px -12px oklch(0% 0 0 / 0.7);
+  --shadow-2: 0 2px 0 oklch(10% 0 0 / 0.6), 0 30px 60px -30px oklch(0% 0 0 / 0.9);
+  --grain-opacity: 0.05;
+}
+
+/* High contrast: flatten atmosphere, maximise ink, thicken borders. */
+:root[data-high-contrast] {
+  --paper: #fff;
+  --paper-raised: #fff;
+  --paper-sunk: #f2f2f2;
+  --ink: #000;
+  --ink-soft: #1a1a1a;
+  --rule: #000;
+  --rule-strong: #000;
+  --accent: #8a1c00;
+  --accent-ink: #fff;
+  --accent-wash: #ffe9e0;
+  --energy-low: #00563a;
+  --energy-medium: #5c3d00;
+  --energy-high: #8a1c00;
+  --done: #00563a;
+  --shadow-1: none;
+  --shadow-2: none;
+  --grain-opacity: 0;
+  --border-w: 2.5px;
+}
+
+:root[data-high-contrast][data-theme='dark'] {
+  --paper: #000;
+  --paper-raised: #000;
+  --paper-sunk: #111;
+  --ink: #fff;
+  --ink-soft: #f0f0f0;
+  --rule: #fff;
+  --rule-strong: #fff;
+  --accent: #ffb38a;
+  --accent-ink: #000;
+  --accent-wash: #2a1206;
+  --energy-low: #7dffcf;
+  --energy-medium: #ffd76a;
+  --energy-high: #ffb38a;
+  --done: #7dffcf;
+}
+
+/* Reading comfort: extra letter, word and line spacing (WCAG 1.4.12 levels). */
+:root[data-comfort] {
+  --leading: 1.85;
+  --tracking: 0.04em;
+  --word-gap: 0.16em;
+}

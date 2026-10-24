@@ -1,0 +1,10 @@
+{
+  "name": "Foothold",
+  "short_name": "Foothold",
+  "description": "Start anything, one small step at a time.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f6efe2",
+  "theme_color": "#b5441f",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

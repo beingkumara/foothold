@@ -1,0 +1,128 @@
+.next {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Two offset sheets behind the card read as "a stack of tasks — you only see the top one". */
+.next::before,
+.next::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: var(--border-w) solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
+}
+
+.next::before {
+  transform: translate(10px, 12px) rotate(1.4deg);
+  opacity: 0.75;
+}
+
+.next::after {
+  transform: translate(20px, 22px) rotate(2.6deg);
+  opacity: 0.45;
+}
+
+.next__card,
+.next--empty {
+  position: relative;
+  display: grid;
+  gap: var(--space-4);
+  padding: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+  border: var(--border-w) solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow-2);
+}
+
+/* Only the content re-mounts per step, so focus stays on the action buttons. */
+.next__content {
+  display: grid;
+  gap: var(--space-4);
+  animation: rise-in var(--duration-normal) var(--ease-out-expo);
+}
+
+.next__eyebrow {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.next__from {
+  text-transform: none;
+  letter-spacing: var(--tracking);
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.next__from strong {
+  color: var(--ink);
+}
+
+.next__step {
+  font-size: var(--text-hero);
+  font-weight: 520;
+  line-height: 1.08;
+  max-width: 22ch;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.next__step:focus {
+  outline: none;
+}
+
+.next__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.next__stretch {
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--energy-medium);
+  background: var(--energy-medium-wash);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  max-width: 60ch;
+}
+
+.next__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.btn--big {
+  min-height: 56px;
+  padding-inline: var(--space-5);
+  font-size: var(--text-lg);
+}
+
+.next__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin-left: calc(var(--space-4) * -1);
+}
+
+.next--empty .next__step {
+  font-size: var(--text-xl);
+}
+
+@media (max-width: 520px) {
+  .next::after {
+    display: none;
+  }
+  .next::before {
+    transform: translate(6px, 8px) rotate(1deg);
+  }
+  .next__actions .btn {
+    flex: 1 1 8rem;
+  }
+}

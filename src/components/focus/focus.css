@@ -1,0 +1,67 @@
+.focus {
+  align-self: center;
+  justify-self: center;
+  width: min(900px, 100%);
+  display: grid;
+  gap: var(--space-5);
+  padding-bottom: var(--space-7);
+}
+
+.focus__context {
+  color: var(--ink-soft);
+  font-size: var(--text-lg);
+}
+
+.focus__step {
+  font-family: var(--font-display);
+  font-variation-settings: 'SOFT' 100;
+  font-size: calc(var(--text-hero) * 1.15);
+  line-height: 1.05;
+  font-weight: 520;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.focus__timer {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.focus__track {
+  height: 14px;
+  border-radius: 7px;
+  border: var(--border-w) solid var(--rule-strong);
+  background: var(--paper-raised);
+  overflow: hidden;
+}
+
+.focus__track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--energy-low), var(--done));
+  transform-origin: left;
+  transition: transform 300ms linear;
+}
+
+.focus__clock {
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.focus__target {
+  font-size: var(--text-base);
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.focus__note {
+  color: var(--ink-soft);
+}
+
+.focus__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
