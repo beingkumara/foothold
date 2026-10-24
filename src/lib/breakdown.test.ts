@@ -76,3 +76,15 @@ describe('splitCompound', () => {
     expect(splitCompound('- one\n\n* two\n  ')).toEqual(['one', 'two']);
   });
 });
+
+describe('robustness', () => {
+  test('repeated shrinking keeps step text bounded', () => {
+    let current = { text: 'Write the introduction', minutes: 20, energy: 'high' as const };
+    for (let i = 0; i < 25; i++) current = { ...shrinkStep(current)[2], energy: 'high' };
+    expect(current.text.length).toBeLessThan(200);
+  });
+
+  test('splitCompound keeps meaningful leading numbers', () => {
+    expect(splitCompound('3 eggs\n1. call mum\n2024 taxes')).toEqual(['3 eggs', 'call mum', '2024 taxes']);
+  });
+});

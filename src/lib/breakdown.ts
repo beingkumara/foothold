@@ -150,7 +150,9 @@ export function breakDown(title: string): readonly StepDraft[] {
 
 /** "I'm stuck": replace one step with smaller, gentler ones that end in the original step. */
 export function shrinkStep(original: StepDraft): readonly StepDraft[] {
-  const lower = original.text.charAt(0).toLowerCase() + original.text.slice(1);
+  const full = original.text.charAt(0).toLowerCase() + original.text.slice(1);
+  // Shrinking a shrunk step nests its text; cap it so repeated "I'm stuck" stays readable.
+  const lower = full.length > 80 ? `${full.slice(0, 77).trimEnd()}…` : full;
   const rest = Math.max(1, Math.round(original.minutes / 2));
   return [
     step('Take three slow breaths and get a drink of water', 1, 'low'),
@@ -164,6 +166,6 @@ export function shrinkStep(original: StepDraft): readonly StepDraft[] {
 export function splitCompound(dump: string): readonly string[] {
   return dump
     .split(/\n|;|\band then\b/i)
-    .map((part) => part.replace(/^\s*[-*•\d.)]+\s*/, '').trim())
+    .map((part) => part.replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '').trim())
     .filter((part) => part.length > 0);
 }

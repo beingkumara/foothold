@@ -18,7 +18,7 @@ export function useShortcuts(map: ShortcutMap, enabled: boolean): void {
   useEffect(() => {
     if (!enabled) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey || isTyping(event.target)) return;
       if (document.querySelector('dialog[open]')) return;
       const handler = mapRef.current[event.key];
       if (handler) {

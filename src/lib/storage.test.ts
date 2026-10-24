@@ -43,3 +43,9 @@ describe('storage', () => {
     expect(parseImport('{"hello":1}')).toEqual({ ok: false, error: 'That file does not look like a Foothold backup.' });
   });
 });
+
+test('an unreadable save is preserved before falling back', () => {
+  window.localStorage.setItem(STATE_KEY, '{"tasks":"broken"}');
+  expect(loadState()).toEqual(EMPTY_STATE);
+  expect(window.localStorage.getItem(`${STATE_KEY}:corrupt`)).toBe('{"tasks":"broken"}');
+});

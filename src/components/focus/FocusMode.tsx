@@ -35,6 +35,9 @@ function FocusBody({ taskTitle, step, sound, onDone, onStuck, onClose }: FocusBo
   const timer = useFocusTimer(targetMs);
   const announce = useAnnounce();
   const notified = useRef(false);
+  const primary = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => primary.current?.focus(), []);
 
   useEffect(() => {
     if (!timer.reachedTarget || notified.current) return;
@@ -71,7 +74,7 @@ function FocusBody({ taskTitle, step, sound, onDone, onStuck, onClose }: FocusBo
       </div>
 
       <div className="focus__actions">
-        <button type="button" className="btn btn--primary btn--big" onClick={onDone}>
+        <button ref={primary} type="button" className="btn btn--primary btn--big" onClick={onDone}>
           <Icon name="check" />
           I did it
         </button>

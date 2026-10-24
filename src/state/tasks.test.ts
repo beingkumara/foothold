@@ -142,3 +142,21 @@ describe('helpers', () => {
     ).toBe(1);
   });
 });
+
+describe('limits that protect saved data', () => {
+  test('clamps long titles and step text so persisted state always validates', () => {
+    const s = add(EMPTY_STATE, 'x'.repeat(2000), 1, [{ text: 'y'.repeat(900), minutes: 0.4, energy: 'low' }]);
+    expect(s.tasks[0].title.length).toBe(300);
+    expect(s.tasks[0].steps[0].text.length).toBe(300);
+    expect(s.tasks[0].steps[0].minutes).toBe(1);
+  });
+
+  test('replaceStep refuses to grow a plan past the step cap', () => {
+    const many = Array.from({ length: 40 }, (_, i) => ({ text: `s${i}`, minutes: 1, energy: 'low' as const }));
+    const s = add(EMPTY_STATE, 'big', 1, many);
+    const t = s.tasks[0];
+    const next = reducer(s, { type: 'replaceStep', taskId: t.id, stepId: t.steps[0].id, steps: drafts });
+    expect(next).toBe(s);
+    expect(reducer(s, { type: 'replaceStep', taskId: 'missing', stepId: 'x', steps: drafts })).toBe(s);
+  });
+});

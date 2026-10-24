@@ -20,8 +20,12 @@ export function CaptureBar({ busy, showExamples, onSubmit, inputRef }: CaptureBa
 
   const submit = async (value: string) => {
     if (!value.trim() || busy) return;
+    // Stop listening first, or a late transcript would refill the box with the old dump.
+    speech.stop();
+    baseText.current = '';
     await onSubmit(value);
     setText('');
+    inputRef.current?.focus();
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -65,7 +69,7 @@ export function CaptureBar({ busy, showExamples, onSubmit, inputRef }: CaptureBa
           maxLength={2000}
           placeholder="e.g. do my taxes, call the dentist…"
           aria-describedby={hintId}
-          disabled={busy}
+          readOnly={busy}
         />
         <p id={hintId} className="capture__hint">
           One task per line. <span className="kbd">Enter</span> breaks it down, <span className="kbd">Shift</span>+

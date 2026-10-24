@@ -61,14 +61,21 @@ test('low energy only offers gentle steps, and flags a stretch otherwise', async
 test('single-key shortcuts work and can be turned off', async ({ page }) => {
   await addExample(page);
   const first = await hero(page).textContent();
-  await page.locator('body').press('d');
+  // Typing a "d" in the capture box must NOT trigger the shortcut.
+  await expect(page.getByLabel('Task or brain dump')).toBeFocused();
+  await page.keyboard.press('d');
+  await expect(hero(page)).toHaveText(first ?? '');
+  await page.getByLabel('Task or brain dump').fill('');
+  await hero(page).focus();
+  await page.keyboard.press('d');
   await expect(hero(page)).not.toHaveText(first ?? '');
 
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.getByRole('switch', { name: /Single-key shortcuts/ }).uncheck();
   await page.keyboard.press('Escape');
   const second = await hero(page).textContent();
-  await page.locator('body').press('d');
+  await hero(page).focus();
+  await page.keyboard.press('d');
   await expect(hero(page)).toHaveText(second ?? '');
 });
 

@@ -62,7 +62,18 @@ export function writeJson(key: string, value: unknown): boolean {
 
 export const STATE_KEY = 'foothold:state:v1';
 
-export const loadState = (): AppState => readJson<AppState>(STATE_KEY, appStateSchema, EMPTY_STATE);
+export function loadState(): AppState {
+  const state = readJson<AppState | null>(STATE_KEY, appStateSchema, null);
+  if (state) return state;
+  // Never let an unreadable save be silently overwritten: keep a copy for recovery.
+  try {
+    const raw = window.localStorage.getItem(STATE_KEY);
+    if (raw !== null) window.localStorage.setItem(`${STATE_KEY}:corrupt`, raw);
+  } catch {
+    // Storage unavailable; nothing to preserve.
+  }
+  return EMPTY_STATE;
+}
 export const saveState = (state: AppState): boolean => writeJson(STATE_KEY, state);
 
 export const serializeExport = (state: AppState): string =>

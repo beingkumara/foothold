@@ -16,7 +16,7 @@ import { canSpeak, useSpeak } from './hooks/useSpeak';
 import { shrinkStep } from './lib/breakdown';
 import { planFromDump } from './lib/plan';
 import { ENERGY_LABEL, ENERGY_LEVELS, type Energy } from './lib/types';
-import { pickNextStep } from './state/tasks';
+import { MAX_STEPS, pickNextStep } from './state/tasks';
 import './app.css';
 
 const CHEERS = ['Nice.', 'That counts.', 'One down.', 'Look at you go.', 'Done is done.'] as const;
@@ -31,6 +31,7 @@ export function App() {
   const [busy, setBusy] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [cheer, setCheer] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const captureRef = useRef<HTMLTextAreaElement>(null);
   const announce = useAnnounce();
   const speak = useSpeak();
@@ -56,15 +57,21 @@ export function App() {
   const handleDump = useCallback(
     async (dump: string) => {
       setBusy(true);
+      setNotice(null);
       try {
         const result = await planFromDump(dump, settings.claudeKey);
+        if (result.tasks.length === 0) {
+          announce('I could not find a task in that. Try writing a few words.', 'assertive');
+          return;
+        }
         const now = Date.now();
         result.tasks.forEach((t) => dispatch({ type: 'addTask', title: t.title, steps: t.steps, source: t.source, now }));
         const summary =
           result.tasks.length === 1
             ? `Planned “${result.tasks[0].title}” as ${result.tasks[0].steps.length} small steps.`
             : `Planned ${result.tasks.length} tasks.`;
-        announce(result.fallbackReason ? `${summary} Used offline steps because: ${result.fallbackReason}.` : summary);
+        if (result.fallbackReason) setNotice(`Used offline steps because ${result.fallbackReason}.`);
+        announce(result.fallbackReason ? `${summary} Used offline steps because ${result.fallbackReason}.` : summary);
       } catch (error: unknown) {
         announce(error instanceof Error ? error.message : 'Could not plan that. Try rewording it.', 'assertive');
       } finally {
@@ -85,6 +92,10 @@ export function App() {
 
   const shrinkCurrent = useCallback(() => {
     if (!pick) return;
+    if (pick.task.steps.length >= MAX_STEPS - 3) {
+      announce('This plan is already in very small pieces. Try "Not now", or rest for a bit.', 'assertive');
+      return;
+    }
     const smaller = shrinkStep(pick.step);
     dispatch({ type: 'replaceStep', taskId: pick.task.id, stepId: pick.step.id, steps: smaller });
     announce(`Made it smaller. New first step: ${smaller[0].text}`);
@@ -185,7 +196,10 @@ export function App() {
         </div>
 
         <aside className="layout__side" aria-label="Capture and progress">
-          <CaptureBar busy={busy} showExamples={state.tasks.length === 0} onSubmit={handleDump} inputRef={captureRef} />
+          <div className="layout__capture">
+            <CaptureBar busy={busy} showExamples={state.tasks.length === 0} onSubmit={handleDump} inputRef={captureRef} />
+            {notice && <p className="notice">{notice}</p>}
+          </div>
           <WinsLog wins={state.wins} now={Date.now()} />
         </aside>
 
@@ -214,7 +228,9 @@ export function App() {
                 onRemove={(taskId) => {
                   dispatch({ type: 'removeTask', taskId });
                   announce('Plan removed.');
-                  document.getElementById('all-heading')?.focus();
+                  requestAnimationFrame(() =>
+                    (document.getElementById('all-heading') ?? document.getElementById('next-heading'))?.focus(),
+                  );
                 }}
               />
             </div>
@@ -223,7 +239,10 @@ export function App() {
       </main>
 
       <footer className="colophon">
-        <p>Your plans never leave this device. No accounts, no tracking. Built for brains that find starting hard.</p>
+        <p>
+          Your plans stay on this device. No accounts, no tracking. (If you add your own Claude key, only the task titles you plan are
+          sent to Anthropic.) Built for brains that find starting hard.
+        </p>
       </footer>
 
       <FocusMode

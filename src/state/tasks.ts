@@ -27,8 +27,19 @@ export const newId = (): string =>
     ? crypto.randomUUID()
     : `id-${Date.now().toString(36)}-${(counter++).toString(36)}`;
 
+// Limits mirror the persisted zod schema so nothing we store can fail validation on reload.
+export const MAX_TITLE = 300;
+export const MAX_STEP_TEXT = 300;
+export const MAX_STEPS = 40;
+
 const toSteps = (drafts: readonly StepDraft[]): readonly Step[] =>
-  drafts.map((d) => ({ ...d, id: newId(), done: false }));
+  drafts.map((d) => ({
+    ...d,
+    text: d.text.slice(0, MAX_STEP_TEXT),
+    minutes: Math.min(600, Math.max(1, Math.round(d.minutes))),
+    id: newId(),
+    done: false,
+  }));
 
 const updateTask = (state: AppState, taskId: string, fn: (task: Task) => Task): AppState => ({
   ...state,
@@ -50,7 +61,7 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'addTask': {
       const task: Task = {
         id: newId(),
-        title: action.title.trim(),
+        title: action.title.trim().slice(0, MAX_TITLE),
         steps: toSteps(action.steps),
         createdAt: action.now,
         today: false,
@@ -94,6 +105,10 @@ export function reducer(state: AppState, action: Action): AppState {
         ),
       );
     case 'replaceStep':
+      {
+        const target = state.tasks.find((t) => t.id === action.taskId);
+        if (!target || target.steps.length + action.steps.length - 1 > MAX_STEPS) return state;
+      }
       return updateTask(state, action.taskId, (t) => ({
         ...t,
         steps: t.steps.flatMap((s) => (s.id === action.stepId ? toSteps(action.steps) : [s])),

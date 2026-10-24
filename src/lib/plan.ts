@@ -16,6 +16,9 @@ export interface PlanResult {
 
 type ClaudeFn = typeof breakDownWithClaude;
 
+/** Keeps a big paste from firing dozens of parallel API calls. */
+export const MAX_AI_TASKS = 8;
+
 /** Brain dump → one plan per line. Claude is optional; offline breakdown is the safety net. */
 export async function planFromDump(dump: string, apiKey: string, claude: ClaudeFn = breakDownWithClaude): Promise<PlanResult> {
   const titles = splitCompound(dump);
@@ -24,8 +27,11 @@ export async function planFromDump(dump: string, apiKey: string, claude: ClaudeF
   }
 
   let fallbackReason: string | undefined;
-  const tasks = await Promise.all(
-    titles.map(async (title): Promise<PlannedTask> => {
+  const aiTitles = titles.slice(0, MAX_AI_TASKS);
+  const extra = titles.slice(MAX_AI_TASKS).map((title): PlannedTask => ({ title, steps: breakDown(title), source: 'local' }));
+  if (extra.length > 0) fallbackReason = `only the first ${MAX_AI_TASKS} lines are sent to Claude`;
+  const aiTasks = await Promise.all(
+    aiTitles.map(async (title): Promise<PlannedTask> => {
       try {
         return { title, steps: await claude(title, apiKey), source: 'ai' };
       } catch (error: unknown) {
@@ -34,5 +40,6 @@ export async function planFromDump(dump: string, apiKey: string, claude: ClaudeF
       }
     }),
   );
+  const tasks = [...aiTasks, ...extra];
   return fallbackReason ? { tasks, fallbackReason } : { tasks };
 }

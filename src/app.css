@@ -144,3 +144,16 @@
       'all';
   }
 }
+
+.layout__capture {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--energy-medium);
+  background: var(--energy-medium-wash);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: var(--text-sm);
+}

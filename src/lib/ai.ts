@@ -76,6 +76,9 @@ export async function breakDownWithClaude(
     const body = responseSchema.parse(await res.json());
     const text = body.content.find((c) => c.type === 'text')?.text ?? '';
     return extractSteps(text);
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw new Error('Claude timed out');
+    throw error;
   } finally {
     clearTimeout(timer);
   }

@@ -133,7 +133,7 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
 
         <fieldset className="settings__group">
           <legend>Your data</legend>
-          <p className="settings__hint">No account, no tracking. Everything stays on this device.</p>
+          <p className="settings__hint">No account, no tracking. Everything stays on this device, except task titles sent to Anthropic if you add a Claude key.</p>
           <div className="settings__row">
             <button type="button" className="btn" onClick={exportData}>
               Download backup
