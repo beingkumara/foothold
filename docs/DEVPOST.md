@@ -25,7 +25,7 @@ We asked a different question: **what is the smallest thing you could do right n
    - **Start** opens a calm focus mode with a timer that *counts up*, so nothing alarms or expires.
 5. A **wins log** counts every step you finished today, which works against the "I did nothing today" feeling.
 
-It works **with no account**, and **offline after your first visit**: a service worker caches the whole app, so it reloads and plans new tasks with no network at all. If you want custom breakdowns, you can add your own Anthropic key, press **Test key** to confirm it works, and Claude writes the steps. If Claude is busy, unreachable, or you're offline, Foothold falls back to the offline engine and tells you why on screen.
+It works **with no account**, and **offline after your first visit**: a service worker caches the whole app, so it reloads and plans new tasks with no network at all. If you want AI-written steps, add a **free Groq key** (no card needed), press **Test key** to confirm it works, and an open model on Groq writes the steps in under a second. If the AI is busy, unreachable, or you're offline, Foothold falls back to the offline engine and tells you why on screen.
 
 ## How it compares
 
@@ -37,7 +37,7 @@ Breaking tasks into steps for ADHD brains isn't new, and good tools already exis
 | **Tiimo** | ✓ AI checklist from a goal | – | – (visual day planner) | Yes | – | Free tier, Pro subscription |
 | **Amazing Marvin** | Manual | You can tag tasks by energy | – | Yes | – | Subscription |
 | **Lifestack** | – | ✓ schedules around energy, reads wearables | – | Yes | – | – |
-| **Foothold** | ✓ offline engine, optional Claude | ✓ low / some / plenty | ✓ one card, the rest hidden | **No** | **Yes** | **Free, open source** |
+| **Foothold** | ✓ offline engine, optional free AI (Groq) | ✓ low / some / plenty | ✓ one card, the rest hidden | **No** | **Yes** | **Free, open source** |
 
 What's actually new is the combination. Foothold doesn't hand you a better list. It picks one step for how you feel right now and hides the rest. If that step is still too big, "I'm stuck" shrinks it on the spot. It needs no account, keeps your data on your device, works offline, and has accessibility tested in public (zero axe violations, WCAG checks in CI). goblin.tools is the closest in spirit, and we'd happily recommend it. Foothold is for the moment *after* the list, when you still can't start.
 
@@ -74,9 +74,9 @@ Accessibility was part of the design from the start, not added at the end:
 - **An offline breakdown engine** (`src/lib/breakdown.ts`) with templates for writing, study, email, cleaning, admin and forms, calls, shopping, code, exercise, cooking, and laundry. A general fallback weaves your own words into the steps.
 - **A next-step picker** (`pickNextStep`) that ranks tasks pinned to today first, then tasks already in progress (to protect momentum), then the oldest. It returns the first step that fits your energy. If nothing fits, it offers the gentlest step and tells you openly that it's a stretch.
 - **An immutable reducer** for state, persisted to localStorage and **validated with zod** on load and on backup import.
-- **Optional Claude integration** (`claude-haiku-5-5`), called directly from the browser with your own key. The model's JSON output is validated with zod. Calls time out after 15 seconds, retry once on 429 or 529 (honouring `retry-after`), run at most 8 in parallel, and skip instantly when the device is offline. A **Test key** button sends a 1-token request so you know straight away whether your key works.
+- **Optional free AI via Groq**, called directly from the browser with your own free key (Groq's API allows cross-origin calls, so there's still no backend). It uses `llama-3.3-70b-versatile` and falls through to `openai/gpt-oss-20b` or `llama-3.1-8b-instant` if Groq retires a model. The model's JSON output is validated with zod. Calls time out after 15 seconds, retry once on 429 or 503 (honouring `retry-after`), run at most 8 in parallel (to respect free-tier limits), and skip instantly when the device is offline. A **Test key** button sends a tiny request so you know straight away whether your key works.
 - **Real offline support:** a build-time Vite plugin writes a service worker with the exact list of built files, precaches all of them, serves the page network-first, and serves the hashed assets cache-first. An end-to-end test cuts the network, reloads, and plans a new task.
-- **A production Content-Security-Policy** that only allows network requests to the app itself and `api.anthropic.com`.
+- **A production Content-Security-Policy** that only allows network requests to the app itself and `api.groq.com`.
 - **Testing:** 58 unit tests (Vitest, 96% coverage of logic, state, and hooks) and 33 Playwright end-to-end runs on desktop and mobile, including axe scans, keyboard flows, swipe gestures, reduced motion, offline reload, persistence, and reflow at 320px.
 - **CI/CD:** GitHub Actions runs the tests and deploys to GitHub Pages.
 
@@ -105,4 +105,4 @@ Accessibility features tend to help everyone. Reading-comfort spacing, "I'm stuc
 
 ## Built with
 
-react · typescript · vite · zod · vitest · playwright · axe-core · claude-api · web-speech-api · github-actions · github-pages
+react · typescript · vite · zod · vitest · playwright · axe-core · groq · llama · web-speech-api · github-actions · github-pages

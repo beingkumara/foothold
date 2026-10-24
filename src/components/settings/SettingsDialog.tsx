@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent } from 'react';
-import { CLAUDE_MODEL, looksLikeClaudeKey, testClaudeKey, type KeyCheck } from '../../lib/ai';
+import { AI_PROVIDER, looksLikeGroqKey, testAIKey, type KeyCheck } from '../../lib/ai';
 import { parseImport, serializeExport } from '../../lib/storage';
 import { TEXT_SCALES, type Settings } from '../../state/settings';
 import type { AppState } from '../../state/tasks';
@@ -26,23 +26,23 @@ const SCALE_LABEL: Record<number, string> = { 1: 'Standard', 1.15: 'Large', 1.3:
 
 export function SettingsDialog({ open, settings, state, onChange, onReplaceState, onClose }: SettingsDialogProps) {
   const announce = useAnnounce();
-  const [keyDraft, setKeyDraft] = useState(settings.claudeKey);
+  const [keyDraft, setKeyDraft] = useState(settings.aiKey);
   const [keyError, setKeyError] = useState<string | null>(null);
   const [keyCheck, setKeyCheck] = useState<KeyCheck | null>(null);
   const [testing, setTesting] = useState(false);
 
   const runKeyTest = async () => {
-    if (!looksLikeClaudeKey(keyDraft)) {
-      setKeyError('That does not look like an Anthropic key (it should start with sk-ant-).');
+    if (!looksLikeGroqKey(keyDraft)) {
+      setKeyError('That does not look like a Groq key (it should start with gsk_).');
       return;
     }
     setKeyError(null);
     setTesting(true);
     setKeyCheck(null);
-    const result = await testClaudeKey(keyDraft);
+    const result = await testAIKey(keyDraft);
     setTesting(false);
     setKeyCheck(result);
-    if (result.ok) onChange({ claudeKey: keyDraft.trim() });
+    if (result.ok) onChange({ aiKey: keyDraft.trim() });
   };
   const [importError, setImportError] = useState<string | null>(null);
   const [confirmWipe, setConfirmWipe] = useState(false);
@@ -53,13 +53,13 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
   };
 
   const saveKey = () => {
-    if (keyDraft.trim() && !looksLikeClaudeKey(keyDraft)) {
-      setKeyError('That does not look like an Anthropic key (it should start with sk-ant-).');
+    if (keyDraft.trim() && !looksLikeGroqKey(keyDraft)) {
+      setKeyError('That does not look like a Groq key (it should start with gsk_).');
       return;
     }
     setKeyError(null);
-    onChange({ claudeKey: keyDraft.trim() });
-    announce(keyDraft.trim() ? 'Claude key saved on this device.' : 'Claude key removed.');
+    onChange({ aiKey: keyDraft.trim() });
+    announce(keyDraft.trim() ? `${AI_PROVIDER} key saved on this device.` : `${AI_PROVIDER} key removed.`);
   };
 
   const exportData = () => {
@@ -120,17 +120,20 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
         </fieldset>
 
         <fieldset className="settings__group">
-          <legend>Smarter breakdowns (optional)</legend>
+          <legend>AI breakdowns (optional, free)</legend>
           <p className="settings__hint">
-            Foothold works fully offline. Add your own Anthropic API key to have {CLAUDE_MODEL} write custom steps. The key is stored
-            only in this browser and sent only to api.anthropic.com.
+            Foothold works fully offline. For AI-written steps, add a free Groq API key (get one at{' '}
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">
+              console.groq.com/keys
+            </a>
+            , no card needed). The key is stored only in this browser and sent only to api.groq.com.
           </p>
-          <label htmlFor="claude-key" className="settings__label">
-            Anthropic API key
+          <label htmlFor="ai-key" className="settings__label">
+            Groq API key
           </label>
           <div className="settings__row">
             <input
-              id="claude-key"
+              id="ai-key"
               type="password"
               autoComplete="off"
               spellCheck={false}
@@ -138,8 +141,8 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
               value={keyDraft}
               onChange={(e) => setKeyDraft(e.target.value)}
               aria-invalid={keyError !== null}
-              aria-describedby={keyError ? 'claude-key-error' : undefined}
-              placeholder="sk-ant-…"
+              aria-describedby={keyError ? 'ai-key-error' : undefined}
+              placeholder="gsk_…"
             />
             <button type="button" className="btn" onClick={saveKey}>
               Save key
@@ -152,7 +155,7 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
             {keyCheck ? (keyCheck.ok ? `✓ ${keyCheck.message}` : `✗ ${keyCheck.message}. Plans will keep using offline steps.`) : ''}
           </p>
           {keyError && (
-            <p id="claude-key-error" className="settings__error" role="alert">
+            <p id="ai-key-error" className="settings__error" role="alert">
               {keyError}
             </p>
           )}
@@ -160,7 +163,7 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
 
         <fieldset className="settings__group">
           <legend>Your data</legend>
-          <p className="settings__hint">No account, no tracking. Everything stays on this device, except task titles sent to Anthropic if you add a Claude key.</p>
+          <p className="settings__hint">No account, no tracking. Everything stays on this device, except task titles sent to Groq if you add a Groq key.</p>
           <div className="settings__row">
             <button type="button" className="btn" onClick={exportData}>
               Download backup

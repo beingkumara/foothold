@@ -13,7 +13,7 @@ export const settingsSchema = z.object({
   shortcuts: z.boolean().default(true),
   sound: z.boolean().default(false),
   energy: z.enum(ENERGY_LEVELS).default('medium'),
-  claudeKey: z.string().max(300).default(''),
+  aiKey: z.string().max(300).default(''),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;

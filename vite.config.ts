@@ -6,14 +6,14 @@ import { readFileSync } from 'node:fs';
 import type { Plugin } from 'vite';
 
 // Production-only CSP (the dev server needs inline scripts + websockets for HMR).
-// The only network destination besides our own origin is the optional Claude API.
+// The only network destination besides our own origin is the optional Groq API.
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self' data:",
-  "connect-src 'self' https://api.anthropic.com",
+  "connect-src 'self' https://api.groq.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",

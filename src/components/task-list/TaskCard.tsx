@@ -33,7 +33,7 @@ export function TaskCard({ task, onToggleStep, onToggleToday, onRemove }: TaskCa
             <span style={{ transform: `scaleX(${total ? done / total : 0})` }} />
           </span>
           {done} of {total} steps done
-          {task.source === 'ai' && <span className="task__badge">Planned with Claude</span>}
+          {task.source === 'ai' && <span className="task__badge">Planned with AI</span>}
         </p>
       </header>
 

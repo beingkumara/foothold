@@ -226,10 +226,10 @@ test('works offline after the first visit (service worker)', async ({ page, cont
   await context.setOffline(false);
 });
 
-test('Test key gives a clear answer (mocked Claude)', async ({ page }) => {
-  await page.route('https://api.anthropic.com/**', (route) => route.fulfill({ status: 401, body: '{}' }));
+test('Test key gives a clear answer (mocked Groq)', async ({ page }) => {
+  await page.route('https://api.groq.com/**', (route) => route.fulfill({ status: 401, body: '{}' }));
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Anthropic API key').fill('sk-ant-api03-' + 'x'.repeat(30));
+  await page.getByLabel('Groq API key').fill('gsk_' + 'x'.repeat(40));
   await page.getByRole('button', { name: 'Test key' }).click();
   await expect(page.getByRole('dialog').getByText(/rejected the API key/)).toBeVisible();
 });

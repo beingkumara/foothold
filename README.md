@@ -27,7 +27,7 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 
 - **Brain dump, typed or spoken.** One task per line. Voice input uses the Web Speech API where the browser supports it.
 - **Offline breakdown engine.** Templates for writing, studying, email, cleaning, admin and forms, calls and appointments, shopping, code, exercise, cooking, and laundry, plus a general fallback. It needs no network and no account.
-- **Optional Claude breakdowns.** Add your own Anthropic key in Settings and `claude-haiku-5-5` writes custom steps. If Claude fails, Foothold falls back to the offline engine and tells you why.
+- **Optional AI breakdowns, free.** Add a free [Groq](https://console.groq.com/keys) key in Settings (no card needed) and an open model (Llama 3.3 70B, falling back to GPT-OSS 20B or Llama 3.1 8B if one is retired) writes custom steps. If the AI fails, Foothold falls back to the offline engine and tells you why.
 - **Energy check-in** (Running low / Some energy / Plenty). The picker never leaves you stuck: if no step fits, it offers the gentlest one, flags it as a stretch, and says that resting is a valid choice.
 - **Focus mode.** A full-screen view with a visual timer, an optional soft chime, and "I did it", "Pause", and "I'm stuck" buttons.
 - **"I'm stuck"** replaces the current step with smaller, gentler sub-steps.
@@ -35,7 +35,7 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 - **Wins log** of every step you finish today.
 - **Backup and restore** as JSON. No accounts and no tracking. Data stays in your browser.
 - **Works offline** after the first visit: a service worker caches the whole app, so you can reload and plan with no network.
-- **Test key** in Settings checks your Claude key with a single tiny request.
+- **Test key** in Settings checks your Groq key with a single tiny request.
 
 ## How it compares
 
@@ -65,7 +65,7 @@ goblin.tools Magic ToDo, Tiimo, Amazing Marvin, and Lifestack each cover part of
 
 ```
 src/
-├── lib/            breakdown engine, Claude client, storage + zod schemas, planner
+├── lib/            breakdown engine, Groq client, storage + zod schemas, planner
 ├── state/          app reducer + next-step picker, settings schema
 ├── hooks/          store, settings, live-region announcer, speech, shortcuts, focus timer
 ├── components/     energy · capture · next-step · task-list · focus · settings · wins · ui
@@ -94,7 +94,7 @@ npm run build
 
 ## Privacy
 
-Foothold has no backend. Your plans live in your browser's local storage. If you add a Claude key, it is stored only in your browser, and the only data sent to `api.anthropic.com` is the task title you are planning.
+Foothold has no backend. Your plans live in your browser's local storage. If you add a Groq key, it is stored only in your browser, and the only data sent to `api.groq.com` is the task title you are planning.
 
 ## Licence
 

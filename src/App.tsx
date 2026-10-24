@@ -74,7 +74,7 @@ export function App() {
       setBusy(true);
       setNotice(null);
       try {
-        const result = await planFromDump(dump, settings.claudeKey);
+        const result = await planFromDump(dump, settings.aiKey);
         if (result.tasks.length === 0) {
           announce('I could not find a task in that. Try writing a few words.', 'assertive');
           return;
@@ -94,7 +94,7 @@ export function App() {
         setBusy(false);
       }
     },
-    [settings.claudeKey, dispatch, announce],
+    [settings.aiKey, dispatch, announce],
   );
 
   const completeCurrent = useCallback(() => {
@@ -286,8 +286,8 @@ export function App() {
 
       <footer className="colophon">
         <p>
-          Your plans stay on this device. No accounts, no tracking. (If you add your own Claude key, only the task titles you plan are
-          sent to Anthropic.) Built for brains that find starting hard.
+          Your plans stay on this device. No accounts, no tracking. (If you add your own free Groq key, only the task titles you plan are
+          sent to Groq.) Built for brains that find starting hard.
         </p>
       </footer>
 
