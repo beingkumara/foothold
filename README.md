@@ -6,6 +6,8 @@ Foothold is an accessible task starter for people who find *starting* the hardes
 
 **Live demo:** https://beingkumara.github.io/foothold/
 
+**Launch video (20 s):** [docs/demo/foothold-launch.mp4](docs/demo/foothold-launch.mp4) · **Walkthrough (1 min):** [docs/demo/foothold-demo.webm](docs/demo/foothold-demo.webm)
+
 ![Foothold, light theme](docs/screenshots/desktop-light.png)
 
 ## Why
