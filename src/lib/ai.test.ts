@@ -90,3 +90,31 @@ describe('looksLikeGroqKey', () => {
     expect(looksLikeGroqKey('sk-ant-api03-abcdefghijklmnopqrstuvwxyz')).toBe(false);
   });
 });
+
+describe('model quirks (seen against the live Groq API)', () => {
+  test('asks gpt-oss models for low reasoning effort, and only them', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(status(404, { error: { code: 'model_not_found' } }))
+      .mockResolvedValueOnce(status(404, { error: { code: 'model_not_found' } }))
+      .mockResolvedValueOnce(chat(STEPS));
+    await breakDownWithAI('x', 'k', fetchMock, 0);
+    const bodies = fetchMock.mock.calls.map(([, init]) => JSON.parse(init.body));
+    bodies.forEach((b) => expect(b.reasoning_effort).toBe(b.model.startsWith('openai/gpt-oss') ? 'low' : undefined));
+  });
+
+  test('moves to the next model when a reply is truncated or unparseable', async () => {
+    const truncated = new Response(
+      JSON.stringify({ choices: [{ finish_reason: 'length', message: { content: '{"steps": [{"text": "Open' } }] }),
+      { status: 200 },
+    );
+    const fetchMock = vi.fn().mockResolvedValueOnce(truncated).mockResolvedValueOnce(chat('sorry, no idea')).mockResolvedValueOnce(chat(STEPS));
+    expect(await breakDownWithAI('x', 'k', fetchMock, 0)).toHaveLength(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  test('fails clearly when every model gives an unusable reply', async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => chat('no steps here'));
+    await expect(breakDownWithAI('x', 'k', fetchMock, 0)).rejects.toThrow("couldn't produce usable steps");
+  });
+});

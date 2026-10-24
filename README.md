@@ -27,7 +27,7 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 
 - **Brain dump, typed or spoken.** One task per line. Voice input uses the Web Speech API where the browser supports it.
 - **Offline breakdown engine.** Templates for writing, studying, email, cleaning, admin and forms, calls and appointments, shopping, code, exercise, cooking, and laundry, plus a general fallback. It needs no network and no account.
-- **Optional AI breakdowns, free.** Add a free [Groq](https://console.groq.com/keys) key in Settings (no card needed) and an open model (Llama 3.3 70B, falling back to GPT-OSS 20B or Llama 3.1 8B if one is retired) writes custom steps. If the AI fails, Foothold falls back to the offline engine and tells you why.
+- **Optional AI breakdowns, free.** Add a free [Groq](https://console.groq.com/keys) key in Settings (no card needed) and an open model (GPT-OSS 120B, falling back to GPT-OSS 20B or Qwen 3.8 27B if one is retired or gives an unusable reply) writes custom steps in about a second. If the AI fails, Foothold falls back to the offline engine and tells you why.
 - **Energy check-in** (Running low / Some energy / Plenty). The picker never leaves you stuck: if no step fits, it offers the gentlest one, flags it as a stretch, and says that resting is a valid choice.
 - **Focus mode.** A full-screen view with a visual timer, an optional soft chime, and "I did it", "Pause", and "I'm stuck" buttons.
 - **"I'm stuck"** replaces the current step with smaller, gentler sub-steps.

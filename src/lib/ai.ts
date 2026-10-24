@@ -9,8 +9,16 @@ import { ENERGY_LEVELS, type StepDraft } from './types';
  */
 
 export const AI_PROVIDER = 'Groq';
-/** Tried in order: Groq retires models over time, so a decommissioned one falls through. */
-export const AI_MODELS = ['llama-3.3-70b-versatile', 'openai/gpt-oss-20b', 'llama-3.1-8b-instant'] as const;
+/**
+ * Tried in order. Groq retires models over time (the Llama 3.x models were gone by Oct 2026),
+ * so a missing model, or one that returns an unusable reply, falls through to the next.
+ */
+export const AI_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3.8-27b'] as const;
+const MAX_COMPLETION_TOKENS = 1200;
+
+/** gpt-oss models reason before answering; at default effort they can spend the whole budget thinking. */
+const modelOptions = (model: string): Record<string, unknown> =>
+  model.startsWith('openai/gpt-oss') ? { reasoning_effort: 'low' } : {};
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 const TIMEOUT_MS = 15_000;
 
@@ -36,7 +44,14 @@ const draftsSchema = z
   .max(8);
 
 const responseSchema = z.object({
-  choices: z.array(z.object({ message: z.object({ content: z.string().nullable().optional() }) })).min(1),
+  choices: z
+    .array(
+      z.object({
+        finish_reason: z.string().nullable().optional(),
+        message: z.object({ content: z.string().nullable().optional() }),
+      }),
+    )
+    .min(1),
 });
 
 export const looksLikeGroqKey = (key: string): boolean => /^gsk_[A-Za-z0-9]{20,}$/.test(key.trim());
@@ -89,32 +104,63 @@ async function post(apiKey: string, body: Record<string, unknown>, fetchImpl: ty
   }
 }
 
-/** One chat call: walks the model list past retired models, with one polite retry on rate limits. */
-async function chat(
+/** Thrown when a model answered but the reply can't be used; the caller tries the next model. */
+class UnusableReply extends Error {}
+
+/** One call to one model, with one polite retry on rate limits. Resolves the reply text, or null if the model is gone. */
+async function chatOnce(
+  model: string,
   apiKey: string,
   messages: ReadonlyArray<{ role: string; content: string }>,
   maxTokens: number,
   fetchImpl: typeof fetch,
   retryDelayMs: number,
-): Promise<string> {
-  for (const model of AI_MODELS) {
-    const body = { model, messages, temperature: 0.4, max_completion_tokens: maxTokens };
-    let res = await post(apiKey, body, fetchImpl);
-    if (RETRY_STATUSES.has(res.status)) {
-      const header = Number(res.headers.get('retry-after'));
-      const wait = Number.isFinite(header) && header > 0 ? Math.min(header * 1000, MAX_RETRY_DELAY_MS) : retryDelayMs;
-      await new Promise((resolve) => setTimeout(resolve, wait));
-      res = await post(apiKey, body, fetchImpl);
-    }
-    if (res.ok) {
-      const parsed = responseSchema.parse(await res.json());
-      return parsed.choices[0].message.content ?? '';
-    }
-    if (await isRetiredModel(res)) continue;
-    throw new Error(friendlyStatus(res.status));
+): Promise<string | null> {
+  const body = { model, messages, temperature: 0.4, max_completion_tokens: maxTokens, ...modelOptions(model) };
+  let res = await post(apiKey, body, fetchImpl);
+  if (RETRY_STATUSES.has(res.status)) {
+    const header = Number(res.headers.get('retry-after'));
+    const wait = Number.isFinite(header) && header > 0 ? Math.min(header * 1000, MAX_RETRY_DELAY_MS) : retryDelayMs;
+    await new Promise((resolve) => setTimeout(resolve, wait));
+    res = await post(apiKey, body, fetchImpl);
   }
-  throw new Error(`None of ${AI_PROVIDER}'s models answered`);
+  if (res.ok) {
+    const choice = responseSchema.parse(await res.json()).choices[0];
+    if (choice.finish_reason === 'length') throw new UnusableReply('reply was cut off');
+    return choice.message.content ?? '';
+  }
+  if (await isRetiredModel(res)) return null;
+  throw new Error(friendlyStatus(res.status));
 }
+
+/** Walk the model list until one gives a reply that `use` accepts. Auth, rate-limit and network errors stop the walk. */
+async function firstUsable<T>(
+  apiKey: string,
+  messages: ReadonlyArray<{ role: string; content: string }>,
+  maxTokens: number,
+  fetchImpl: typeof fetch,
+  retryDelayMs: number,
+  use: (reply: string) => T,
+): Promise<T> {
+  let answered = false;
+  for (const model of AI_MODELS) {
+    try {
+      const reply = await chatOnce(model, apiKey, messages, maxTokens, fetchImpl, retryDelayMs);
+      if (reply === null) continue;
+      answered = true;
+      return use(reply);
+    } catch (error: unknown) {
+      if (error instanceof UnusableReply || error instanceof z.ZodError || error instanceof SyntaxError || isNoSteps(error)) {
+        answered = true;
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error(answered ? `${AI_PROVIDER} couldn't produce usable steps` : `None of ${AI_PROVIDER}'s models answered`);
+}
+
+const isNoSteps = (error: unknown): boolean => error instanceof Error && error.message === 'No step list in reply';
 
 export async function breakDownWithAI(
   title: string,
@@ -122,17 +168,17 @@ export async function breakDownWithAI(
   fetchImpl: typeof fetch = fetch,
   retryDelayMs = 1000,
 ): Promise<readonly StepDraft[]> {
-  const reply = await chat(
+  return firstUsable(
     apiKey,
     [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: `Task: ${title.slice(0, 300)}` },
     ],
-    700,
+    MAX_COMPLETION_TOKENS,
     fetchImpl,
     retryDelayMs,
+    extractSteps,
   );
-  return extractSteps(reply);
 }
 
 export interface KeyCheck {
@@ -143,7 +189,7 @@ export interface KeyCheck {
 /** A tiny request so people (and judges) know right away whether their key works. */
 export async function testAIKey(apiKey: string, fetchImpl: typeof fetch = fetch): Promise<KeyCheck> {
   try {
-    await chat(apiKey, [{ role: 'user', content: 'Reply with the word ok.' }], 5, fetchImpl, 1000);
+    await firstUsable(apiKey, [{ role: 'user', content: 'Reply with the word ok.' }], 200, fetchImpl, 1000, (reply) => reply);
     return { ok: true, message: `Your key works. New plans will be written by ${AI_PROVIDER}.` };
   } catch (error: unknown) {
     return { ok: false, message: error instanceof Error ? error.message : `${AI_PROVIDER} could not be reached.` };
