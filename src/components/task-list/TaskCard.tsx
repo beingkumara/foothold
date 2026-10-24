@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ENERGY_LABEL, type Task } from '../../lib/types';
 import { formatMinutes } from '../../lib/format';
 import { progress } from '../../state/tasks';
@@ -13,6 +13,11 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onToggleStep, onToggleToday, onRemove }: TaskCardProps) {
   const [confirming, setConfirming] = useState(false);
+  const removeRef = useRef<HTMLButtonElement>(null);
+  const cancelConfirm = () => {
+    setConfirming(false);
+    requestAnimationFrame(() => removeRef.current?.focus());
+  };
   const { done, total } = progress(task);
   const headingId = `task-${task.id}`;
   const finished = task.doneAt !== undefined;
@@ -60,12 +65,12 @@ export function TaskCard({ task, onToggleStep, onToggleToday, onRemove }: TaskCa
             <button type="button" className="btn btn--quiet task__danger" onClick={onRemove} autoFocus>
               Yes, remove it
             </button>
-            <button type="button" className="btn btn--quiet" onClick={() => setConfirming(false)}>
+            <button type="button" className="btn btn--quiet" onClick={cancelConfirm}>
               Keep it
             </button>
           </span>
         ) : (
-          <button type="button" className="btn btn--quiet" onClick={() => setConfirming(true)}>
+          <button ref={removeRef} type="button" className="btn btn--quiet" onClick={() => setConfirming(true)}>
             <Icon name="trash" />
             Remove<span className="visually-hidden"> {task.title}</span>
           </button>

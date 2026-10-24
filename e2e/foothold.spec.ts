@@ -121,3 +121,33 @@ test('no horizontal overflow at 320px with largest text', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('announcements still reach screen readers while a modal dialog is open', async ({ page }) => {
+  await addExample(page);
+  await page.getByRole('button', { name: /^Start/ }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.locator('.focus__step')).toBeFocused();
+  await dialog.getByRole('button', { name: "I'm stuck" }).click();
+  await expect(dialog.locator('[data-dialog-announcer]')).toContainText('Made it smaller');
+  await expect(dialog.locator('[data-dialog-announcer]')).toContainText('Next: Take three slow breaths');
+});
+
+test('finishing a plan from the checklist keeps focus and announces it', async ({ page }) => {
+  await addExample(page, 'Reply to the email from my landlord');
+  await page.getByRole('button', { name: /See everything/ }).click();
+  const boxes = page.getByRole('article').getByRole('checkbox');
+  const count = await boxes.count();
+  for (let i = 0; i < count; i++) await boxes.nth(i).click();
+  await expect(page.locator('#all-heading')).toBeFocused();
+  await expect(page.getByTestId('announcer')).toContainText('Moved to Finished');
+});
+
+test('survives WCAG 1.4.12 text-spacing overrides at 320px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await addExample(page, 'Start my history essay');
+  await page.addStyleTag({
+    content: '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; } p { margin-bottom: 2em !important; }',
+  });
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+});

@@ -28,7 +28,9 @@ export function Dialog({ open, title, onClose, children, variant = 'sheet', hide
       el.showModal();
     } else if (!open && el.open) {
       el.close();
-      if (opener.current instanceof HTMLElement) opener.current.focus();
+      const back = opener.current;
+      if (back instanceof HTMLElement && back.isConnected && back !== document.body) back.focus();
+      else (document.getElementById('next-heading') ?? document.getElementById('main'))?.focus();
     }
   }, [open]);
 
@@ -45,6 +47,7 @@ export function Dialog({ open, title, onClose, children, variant = 'sheet', hide
         if (event.target === ref.current) onClose();
       }}
     >
+      <div className="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-dialog-announcer />
       {open && (
         <div className="dialog__body">
           <header className="dialog__header">

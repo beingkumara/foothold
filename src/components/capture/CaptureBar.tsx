@@ -81,7 +81,6 @@ export function CaptureBar({ busy, showExamples, onSubmit, inputRef }: CaptureBa
               type="button"
               className={`btn ${speech.listening ? 'btn--listening' : ''}`}
               onClick={toggleMic}
-              aria-pressed={speech.listening}
               disabled={busy}
             >
               <Icon name="mic" />

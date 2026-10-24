@@ -48,6 +48,13 @@ export function App() {
     hadPick.current = pick !== null;
   }, [pick]);
 
+  // Buttons keep focus when the step changes, so tell screen reader users what the new step is.
+  const prevStepId = useRef(pick?.step.id);
+  useEffect(() => {
+    if (pick && prevStepId.current && pick.step.id !== prevStepId.current) announce(`Next: ${pick.step.text}`);
+    prevStepId.current = pick?.step.id;
+  }, [pick, announce]);
+
   useEffect(() => {
     if (!cheer) return;
     const t = setTimeout(() => setCheer(null), CHEER_MS);
@@ -98,7 +105,7 @@ export function App() {
     }
     const smaller = shrinkStep(pick.step);
     dispatch({ type: 'replaceStep', taskId: pick.task.id, stepId: pick.step.id, steps: smaller });
-    announce(`Made it smaller. New first step: ${smaller[0].text}`);
+    announce('Made it smaller.');
   }, [pick, dispatch, announce]);
 
   const skipCurrent = useCallback(() => {
@@ -137,6 +144,19 @@ export function App() {
   );
 
   const closePanel = useCallback(() => setPanel('none'), []);
+
+  // Finishing or reopening a plan moves its card between groups; keep focus and say why.
+  const toggleListStep = (taskId: string, stepId: string, done: boolean) => {
+    const task = state.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const finishing = done && task.steps.filter((s) => !s.done).length === 1;
+    const reopening = !done && task.doneAt !== undefined;
+    dispatch(done ? { type: 'completeStep', taskId, stepId, now: Date.now() } : { type: 'uncompleteStep', taskId, stepId });
+    if (finishing || reopening) {
+      announce(finishing ? `Finished “${task.title}”. Moved to Finished.` : `Reopened “${task.title}”.`);
+      requestAnimationFrame(() => document.getElementById('all-heading')?.focus());
+    }
+  };
 
   return (
     <>
@@ -221,9 +241,7 @@ export function App() {
             <div id="all-plans" hidden={!showAll}>
               <TaskList
                 tasks={state.tasks}
-                onToggleStep={(taskId, stepId, done) =>
-                  dispatch(done ? { type: 'completeStep', taskId, stepId, now: Date.now() } : { type: 'uncompleteStep', taskId, stepId })
-                }
+                onToggleStep={toggleListStep}
                 onToggleToday={(taskId) => dispatch({ type: 'toggleToday', taskId })}
                 onRemove={(taskId) => {
                   dispatch({ type: 'removeTask', taskId });

@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { CLAUDE_MODEL, looksLikeClaudeKey } from '../../lib/ai';
 import { parseImport, serializeExport } from '../../lib/storage';
 import { TEXT_SCALES, type Settings } from '../../state/settings';
@@ -30,6 +30,11 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
   const [keyError, setKeyError] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [confirmWipe, setConfirmWipe] = useState(false);
+  const wipeRef = useRef<HTMLButtonElement>(null);
+  const closeWipe = () => {
+    setConfirmWipe(false);
+    requestAnimationFrame(() => wipeRef.current?.focus());
+  };
 
   const saveKey = () => {
     if (keyDraft.trim() && !looksLikeClaudeKey(keyDraft)) {
@@ -155,18 +160,18 @@ export function SettingsDialog({ open, settings, state, onChange, onReplaceState
                 className="btn settings__danger"
                 onClick={() => {
                   onReplaceState({ tasks: [], wins: [], skipped: [] });
-                  setConfirmWipe(false);
+                  closeWipe();
                   announce('All plans and wins deleted.');
                 }}
               >
                 Yes, delete everything
               </button>
-              <button type="button" className="btn btn--quiet" onClick={() => setConfirmWipe(false)}>
+              <button type="button" className="btn btn--quiet" onClick={closeWipe} autoFocus>
                 Cancel
               </button>
             </div>
           ) : (
-            <button type="button" className="btn btn--quiet settings__danger" onClick={() => setConfirmWipe(true)}>
+            <button ref={wipeRef} type="button" className="btn btn--quiet settings__danger" onClick={() => setConfirmWipe(true)}>
               Delete all my data…
             </button>
           )}

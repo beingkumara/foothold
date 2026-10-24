@@ -69,6 +69,7 @@
 
 .energy-picker__option:has(input:checked) .energy-picker__label::after {
   content: ' ✓';
+  content: ' ✓' / '';
 }
 
 .energy-picker__meter {

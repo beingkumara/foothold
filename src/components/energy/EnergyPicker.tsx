@@ -34,7 +34,7 @@ export function EnergyPicker({ value, onChange }: EnergyPickerProps) {
               ))}
             </span>
             <span className="energy-picker__label">{ENERGY_LABEL[level]}</span>
-            <span id={`energy-hint-${level}`} className="energy-picker__hint">
+            <span id={`energy-hint-${level}`} className="energy-picker__hint" aria-hidden="true">
               {HINT[level]}
             </span>
           </label>

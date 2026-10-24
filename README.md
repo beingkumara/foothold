@@ -36,7 +36,7 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 ## Accessibility (built in from the start)
 
 - **Atkinson Hyperlegible** body font, designed by the Braille Institute for low-vision readers.
-- **Reading-comfort spacing** that raises letter, word, and line spacing to the WCAG 1.4.12 levels.
+- **Reading-comfort spacing** that adds letter, word, and line spacing. The layout also holds up under the full WCAG 1.4.12 text-spacing overrides, which is tested automatically.
 - **Text size** up to 150%, with no horizontal scrolling at 320px (WCAG 1.4.10 Reflow). This is tested automatically.
 - **High-contrast mode** in both light and dark, plus light, dark, and system themes.
 - **Reduced motion** follows the OS setting and also has its own toggle.

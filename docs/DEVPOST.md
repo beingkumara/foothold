@@ -32,7 +32,7 @@ It works **fully offline with no account**. If you want custom breakdowns, you c
 Accessibility was part of the design from the start, not added at the end:
 
 - The body font is **Atkinson Hyperlegible**, designed by the Braille Institute for low-vision readers.
-- **Reading-comfort spacing** raises letter, word, and line spacing to the WCAG 1.4.12 levels. We chose this instead of a "dyslexia font", because the evidence for spacing is stronger.
+- **Reading-comfort spacing** adds letter, word, and line spacing. We chose this instead of a "dyslexia font", because the evidence for spacing is stronger. The layout also holds up under the full WCAG 1.4.12 text-spacing overrides, which is tested automatically.
 - Text size goes up to **150%**, with **no horizontal scroll at 320px** (WCAG 1.4.10). This is tested automatically.
 - **High-contrast mode** works in light and dark, alongside light, dark, and system themes.
 - **Reduced motion** follows your OS setting and also has its own toggle.

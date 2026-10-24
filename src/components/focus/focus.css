@@ -22,6 +22,10 @@
   overflow-wrap: anywhere;
 }
 
+.focus__step:focus {
+  outline: none;
+}
+
 .focus__timer {
   display: grid;
   gap: var(--space-2);

@@ -35,9 +35,15 @@ function FocusBody({ taskTitle, step, sound, onDone, onStuck, onClose }: FocusBo
   const timer = useFocusTimer(targetMs);
   const announce = useAnnounce();
   const notified = useRef(false);
-  const primary = useRef<HTMLButtonElement>(null);
+  const stepRef = useRef<HTMLParagraphElement>(null);
 
-  useEffect(() => primary.current?.focus(), []);
+  // Land on the step itself (read out by screen readers), never on "I did it",
+  // so an extra Enter after "I'm stuck" can't mark an undone step as done.
+  // Deferred a frame: child effects run before the parent Dialog calls showModal(), which moves focus.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => stepRef.current?.focus());
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
     if (!timer.reachedTarget || notified.current) return;
@@ -53,7 +59,9 @@ function FocusBody({ taskTitle, step, sound, onDone, onStuck, onClose }: FocusBo
       <p className="focus__context">
         Working on <strong>{taskTitle}</strong>
       </p>
-      <p className="focus__step">{step.text}</p>
+      <p ref={stepRef} tabIndex={-1} className="focus__step">
+        {step.text}
+      </p>
 
       <div className="focus__timer">
         <div className="focus__track" aria-hidden="true">
@@ -74,11 +82,11 @@ function FocusBody({ taskTitle, step, sound, onDone, onStuck, onClose }: FocusBo
       </div>
 
       <div className="focus__actions">
-        <button ref={primary} type="button" className="btn btn--primary btn--big" onClick={onDone}>
+        <button type="button" className="btn btn--primary btn--big" onClick={onDone}>
           <Icon name="check" />
           I did it
         </button>
-        <button type="button" className="btn btn--big" onClick={timer.toggle} aria-pressed={!timer.running}>
+        <button type="button" className="btn btn--big" onClick={timer.toggle}>
           <Icon name={timer.running ? 'pause' : 'play'} />
           {timer.running ? 'Pause' : 'Resume'}
         </button>

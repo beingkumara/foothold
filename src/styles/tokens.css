@@ -152,7 +152,8 @@
   --done: #7dffcf;
 }
 
-/* Reading comfort: extra letter, word and line spacing (WCAG 1.4.12 levels). */
+/* Reading comfort: extra letter, word and line spacing. The layout also survives the
+   full WCAG 1.4.12 text-spacing overrides (covered by an e2e test). */
 :root[data-comfort] {
   --leading: 1.85;
   --tracking: 0.04em;
