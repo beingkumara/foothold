@@ -34,6 +34,12 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 - **Read aloud** for any step, using the device voice.
 - **Wins log** of every step you finish today.
 - **Backup and restore** as JSON. No accounts and no tracking. Data stays in your browser.
+- **Works offline** after the first visit: a service worker caches the whole app, so you can reload and plan with no network.
+- **Test key** in Settings checks your Claude key with a single tiny request.
+
+## How it compares
+
+goblin.tools Magic ToDo, Tiimo, Amazing Marvin, and Lifestack each cover part of this space: AI breakdowns, visual planning, energy tags, or energy-aware scheduling. Foothold's contribution is the combination. It **chooses one step** for your current energy and hides the rest, shrinks it on demand ("I'm stuck"), needs **no account**, works **offline**, and has its accessibility tested in CI. See [docs/DEVPOST.md](docs/DEVPOST.md#how-it-compares) for the sourced comparison table.
 
 ## Accessibility (built in from the start)
 
@@ -53,8 +59,8 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 
 - React 19, TypeScript (strict), Vite, and **Motion** for spring physics, gestures, and layout animation. 133 KB of JS gzipped, with fonts self-hosted.
 - State is an immutable reducer, persisted to `localStorage` and validated with **zod** on load and import.
-- **47 unit tests** (Vitest) with **97.5% coverage** of the logic, state, and hooks. Thin wrappers around browser speech and audio APIs are excluded from coverage and exercised manually.
-- **15 Playwright E2E tests** (run on desktop and mobile), including axe accessibility scans, keyboard flows, swipe gestures, reduced motion, persistence, and reflow.
+- **58 unit tests** (Vitest) with **96% coverage** of the logic, state, and hooks. Thin wrappers around browser speech and audio APIs are excluded from coverage and exercised manually.
+- **17 Playwright E2E tests** (run on desktop and mobile), covering axe accessibility scans, offline reload, keyboard flows, swipe gestures, reduced motion, persistence, and reflow.
 - CI on GitHub Actions runs the tests and deploys to GitHub Pages.
 
 ```
