@@ -11,6 +11,7 @@ const seed = async (page: Page) => {
   await page.getByRole('button', { name: 'Break it down' }).click();
   await page.getByRole('button', { name: /^Done/ }).click();
   await page.waitForTimeout(1600);
+  await page.evaluate(() => window.scrollTo(0, 0));
 };
 
 for (const [name, width, height] of [

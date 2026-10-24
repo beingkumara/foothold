@@ -1,15 +1,18 @@
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CaptureBar } from './components/capture/CaptureBar';
 import { EnergyPicker } from './components/energy/EnergyPicker';
 import { FocusMode } from './components/focus/FocusMode';
-import { NextStep } from './components/next-step/NextStep';
+import { NextStep, type ExitIntent } from './components/next-step/NextStep';
 import { HelpDialog } from './components/settings/HelpDialog';
 import { SettingsDialog } from './components/settings/SettingsDialog';
 import { TaskList } from './components/task-list/TaskList';
 import { Icon } from './components/ui/Icon';
+import { Scribble } from './components/ui/Scribble';
 import { WinsLog } from './components/wins/WinsLog';
 import { useAnnounce } from './hooks/useAnnouncer';
 import { useAppStore } from './hooks/useAppStore';
+import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 import { useSettings } from './hooks/useSettings';
 import { useShortcuts } from './hooks/useShortcuts';
 import { canSpeak, useSpeak } from './hooks/useSpeak';
@@ -32,6 +35,9 @@ export function App() {
   const [showAll, setShowAll] = useState(false);
   const [cheer, setCheer] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [exitIntent, setExitIntent] = useState<ExitIntent>('swap');
+  const [burstKey, setBurstKey] = useState(0);
+  const osReducedMotion = usePrefersReducedMotion();
   const captureRef = useRef<HTMLTextAreaElement>(null);
   const announce = useAnnounce();
   const speak = useSpeak();
@@ -40,6 +46,8 @@ export function App() {
   const pick = useMemo(() => pickNextStep(state, energy), [state, energy]);
   const openTasks = state.tasks.filter((t) => t.doneAt === undefined);
   const stepNumber = pick ? pick.task.steps.findIndex((s) => s.id === pick.step.id) + 1 : 0;
+  const remaining = openTasks.reduce((n, t) => n + t.steps.filter((s) => !s.done).length, 0);
+  const reduceMotion = settings.reduceMotion || osReducedMotion;
 
   // When the hero empties out, its buttons vanish; keep keyboard users anchored.
   const hadPick = useRef(pick !== null);
@@ -72,6 +80,7 @@ export function App() {
           return;
         }
         const now = Date.now();
+        setExitIntent('swap');
         result.tasks.forEach((t) => dispatch({ type: 'addTask', title: t.title, steps: t.steps, source: t.source, now }));
         const summary =
           result.tasks.length === 1
@@ -90,6 +99,8 @@ export function App() {
 
   const completeCurrent = useCallback(() => {
     if (!pick) return;
+    setExitIntent('done');
+    setBurstKey((k) => k + 1);
     dispatch({ type: 'completeStep', taskId: pick.task.id, stepId: pick.step.id, now: Date.now() });
     const line = CHEERS[Math.floor(Math.random() * CHEERS.length)];
     setCheer(line);
@@ -104,18 +115,21 @@ export function App() {
       return;
     }
     const smaller = shrinkStep(pick.step);
+    setExitIntent('stuck');
     dispatch({ type: 'replaceStep', taskId: pick.task.id, stepId: pick.step.id, steps: smaller });
     announce('Made it smaller.');
   }, [pick, dispatch, announce]);
 
   const skipCurrent = useCallback(() => {
     if (!pick) return;
+    setExitIntent('skip');
     dispatch({ type: 'skipStep', stepId: pick.step.id });
     announce('Set aside for now.');
   }, [pick, dispatch, announce]);
 
   const setEnergy = useCallback(
     (level: Energy) => {
+      setExitIntent('swap');
       updateSettings({ energy: level });
       dispatch({ type: 'clearSkips' });
       announce(`Energy set to ${ENERGY_LABEL[level].toLowerCase()}.`);
@@ -159,7 +173,7 @@ export function App() {
   };
 
   return (
-    <>
+    <MotionConfig reducedMotion={reduceMotion ? 'always' : 'never'}>
       <a className="skip-link" href="#main">
         Skip to your next step
       </a>
@@ -170,8 +184,9 @@ export function App() {
               <path d="M10 42c7-12 12-12 17-5s10 7 17-7l8-8" fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
-          <div>
+          <div className="masthead__words">
             <h1 className="masthead__title">Foothold</h1>
+            <Scribble className="masthead__scribble" delay={0.5} />
             <p className="masthead__tagline">Start anything. One small step at a time.</p>
           </div>
         </div>
@@ -196,6 +211,10 @@ export function App() {
               energy={energy}
               stepNumber={stepNumber}
               stepTotal={pick?.task.steps.length ?? 0}
+              remaining={remaining}
+              exitIntent={exitIntent}
+              burstKey={burstKey}
+              reduceMotion={reduceMotion}
               hasOpenTasks={state.tasks.length > 0}
               hasSkipped={state.skipped.length > 0 && openTasks.length > 0}
               shortcuts={settings.shortcuts}
@@ -207,11 +226,20 @@ export function App() {
               onSpeak={readAloud}
               onRestoreSkipped={() => dispatch({ type: 'clearSkips' })}
             />
-            {cheer && (
-              <p className="cheer" aria-hidden="true">
-                {cheer}
-              </p>
-            )}
+            <AnimatePresence>
+              {cheer && (
+                <motion.p
+                  key={burstKey}
+                  className="cheer"
+                  aria-hidden="true"
+                  initial={{ scale: 0, rotate: -28 }}
+                  animate={{ scale: 1, rotate: -7, transition: { type: 'spring', stiffness: 500, damping: 14 } }}
+                  exit={{ scale: 0.6, opacity: 0, transition: { duration: 0.2 } }}
+                >
+                  {cheer}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -284,6 +312,6 @@ export function App() {
         onClose={closePanel}
       />
       <HelpDialog open={panel === 'help'} onClose={closePanel} />
-    </>
+    </MotionConfig>
   );
 }

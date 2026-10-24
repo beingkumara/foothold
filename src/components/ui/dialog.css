@@ -1,10 +1,10 @@
 .dialog {
-  border: var(--border-w) solid var(--rule-strong);
-  border-radius: var(--radius-md);
+  border: var(--border-heavy) solid var(--ink);
+  border-radius: 6px 22px 22px 22px;
   padding: 0;
   background: var(--paper-raised);
   color: var(--ink);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--hard-3);
   width: min(560px, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
 }

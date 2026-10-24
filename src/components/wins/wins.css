@@ -1,28 +1,45 @@
 .wins {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-md);
-  background: var(--paper-sunk);
-  border: var(--border-w) solid var(--rule);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: var(--border-w) solid var(--ink);
+  border-radius: 6px 22px 6px 22px;
+  background: var(--block-wins);
+  color: var(--on-block);
+  box-shadow: var(--hard-2);
+  transform: rotate(0.6deg);
 }
 
 .wins__heading {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-3);
   font-size: var(--text-lg);
 }
 
+.wins__count-wrap {
+  display: inline-grid;
+  min-width: 3.4rem;
+  justify-items: center;
+}
+
 .wins__count {
-  font-size: calc(var(--text-xl) * 1.4);
-  color: var(--done);
+  display: grid;
+  place-items: center;
+  min-width: 3.4rem;
+  height: 3.4rem;
+  padding: 0 0.3rem;
+  border: var(--border-w) solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-size: var(--text-xl);
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  box-shadow: var(--hard-1);
 }
 
 .wins__empty {
-  color: var(--ink-soft);
   font-size: var(--text-sm);
 }
 
@@ -38,16 +55,18 @@
   display: grid;
   grid-template-columns: 4.5rem 1fr;
   gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 2px dotted currentColor;
   font-size: var(--text-sm);
-  animation: rise-in var(--duration-normal) var(--ease-out-expo);
 }
 
 .wins__list time {
-  color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 .wins__list .is-task span {
   font-weight: 700;
-  color: var(--done);
+  text-decoration: underline wavy;
+  text-underline-offset: 0.25em;
 }

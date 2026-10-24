@@ -39,7 +39,8 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 - **Reading-comfort spacing** that adds letter, word, and line spacing. The layout also holds up under the full WCAG 1.4.12 text-spacing overrides, which is tested automatically.
 - **Text size** up to 150%, with no horizontal scrolling at 320px (WCAG 1.4.10 Reflow). This is tested automatically.
 - **High-contrast mode** in both light and dark, plus light, dark, and system themes.
-- **Reduced motion** follows the OS setting and also has its own toggle.
+- **Reduced motion** follows the OS setting live and also has its own toggle. Card flings, the confetti burst, and the breathing blob are all switched off.
+- **Every gesture has a button** (WCAG 2.5.7): fling right for Done or left for Not now, or use the buttons and shortcuts.
 - **Screen readers:** every action is announced through ARIA live regions, and dialogs use native `<dialog>` for focus trapping, Escape to close, and focus returning to where you were.
 - **Keyboard-first:** a skip link, visible focus rings, and focus that stays put when the step changes. Single-key shortcuts (F, D, S, N, R, 1–3, /, ?) never fire while you type, and **you can turn them off** (WCAG 2.1.4).
 - **Never colour alone:** energy levels always have a text label and a bar-meter shape.
@@ -48,10 +49,10 @@ To-do apps assume the hard part is *remembering*. For many people the hard part 
 
 ## Tech
 
-- React 19, TypeScript (strict), and Vite. 86 KB of JS gzipped, with fonts self-hosted.
+- React 19, TypeScript (strict), Vite, and **Motion** for spring physics, gestures, and layout animation. 133 KB of JS gzipped, with fonts self-hosted.
 - State is an immutable reducer, persisted to `localStorage` and validated with **zod** on load and import.
 - **47 unit tests** (Vitest) with **97.5% coverage** of the logic, state, and hooks. Thin wrappers around browser speech and audio APIs are excluded from coverage and exercised manually.
-- **10 Playwright E2E tests**, including axe accessibility scans, keyboard flows, persistence, and reflow.
+- **15 Playwright E2E tests** (run on desktop and mobile), including axe accessibility scans, keyboard flows, swipe gestures, reduced motion, persistence, and reflow.
 - CI on GitHub Actions runs the tests and deploys to GitHub Pages.
 
 ```

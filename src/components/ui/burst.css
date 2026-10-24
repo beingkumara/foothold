@@ -1,0 +1,36 @@
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.burst__piece {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: -12px 0 0 -12px;
+  overflow: visible;
+}
+
+.burst__piece path {
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.burst__piece path.is-stroke {
+  fill: none;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+
+.burst__piece--low path:not(.is-stroke) { fill: var(--energy-low-wash); }
+.burst__piece--medium path:not(.is-stroke) { fill: var(--energy-medium-wash); }
+.burst__piece--high path:not(.is-stroke) { fill: var(--accent); }
+.burst__piece--wins path:not(.is-stroke) { fill: var(--block-wins); }
+.burst__piece--low path.is-stroke { stroke: var(--energy-low); }
+.burst__piece--high path.is-stroke { stroke: var(--accent); }

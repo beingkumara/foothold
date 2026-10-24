@@ -1,0 +1,17 @@
+.kinetic__mask {
+  display: inline-block;
+  overflow: hidden;
+  /* Room for descenders and Fraunces' wonky overshoots inside the mask. */
+  padding: 0.04em 0.06em 0.14em;
+  margin: -0.04em -0.06em -0.14em;
+  vertical-align: top;
+  max-width: 100%;
+}
+
+.kinetic__word {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  transform-origin: 0 100%;
+  will-change: transform;
+}

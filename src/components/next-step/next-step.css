@@ -1,62 +1,97 @@
 .next {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* ---------- The deck ---------- */
+
+.deck {
   position: relative;
   isolation: isolate;
+  padding: 0 22px 26px 0;
 }
 
-/* Two offset sheets behind the card read as "a stack of tasks — you only see the top one". */
-.next::before,
-.next::after {
-  content: '';
+/* Sheets behind the card: "there is more, but you only need the top one". */
+.deck__sheet {
   position: absolute;
-  inset: 0;
+  inset: 0 22px 26px 0;
   z-index: -1;
-  border: var(--border-w) solid var(--rule);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-lg);
   background: var(--paper-raised);
 }
 
-.next::before {
-  transform: translate(10px, 12px) rotate(1.4deg);
-  opacity: 0.75;
+.deck__sheet--1 {
+  transform: translate(11px, 13px) rotate(1.6deg);
+  background: var(--energy-medium-wash);
 }
 
-.next::after {
-  transform: translate(20px, 22px) rotate(2.6deg);
-  opacity: 0.45;
+.deck__sheet--2 {
+  transform: translate(22px, 26px) rotate(3.2deg);
+  background: var(--block-wins);
 }
 
-.next__card,
-.next--empty {
+.next__card {
   position: relative;
   display: grid;
-  gap: var(--space-4);
-  padding: clamp(1.5rem, 1rem + 2.5vw, 3rem);
-  border: var(--border-w) solid var(--rule-strong);
+  gap: var(--space-3);
+  padding: clamp(1.4rem, 1rem + 2.4vw, 2.75rem);
+  border: var(--border-heavy) solid var(--ink);
   border-radius: var(--radius-lg);
   background: var(--paper-raised);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--hard-2);
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  min-height: 21rem;
+  align-content: start;
 }
 
-/* Only the content re-mounts per step, so focus stays on the action buttons. */
-.next__content {
+.next__card .sticker {
+  justify-self: start;
+}
+
+.next__card--empty {
+  cursor: default;
+  user-select: auto;
+  min-height: 18rem;
+}
+
+.next__topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+/* Circular step stamp, slightly off-axis. */
+.next__count {
   display: grid;
-  gap: var(--space-4);
-  animation: rise-in var(--duration-normal) var(--ease-out-expo);
+  place-items: center;
+  width: 4.2rem;
+  height: 4.2rem;
+  flex-shrink: 0;
+  border: var(--border-w) solid var(--ink);
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1;
+  transform: rotate(8deg);
+  box-shadow: var(--hard-1);
 }
 
-.next__eyebrow {
-  font-size: var(--text-sm);
+.next__count small {
+  font-size: 0.55em;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--accent);
 }
 
 .next__from {
-  text-transform: none;
-  letter-spacing: var(--tracking);
-  font-weight: 400;
   color: var(--ink-soft);
+  overflow-wrap: anywhere;
 }
 
 .next__from strong {
@@ -65,10 +100,10 @@
 
 .next__step {
   font-size: var(--text-hero);
-  font-weight: 520;
-  line-height: 1.08;
-  max-width: 22ch;
-  text-wrap: balance;
+  font-weight: 760;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  max-width: 18ch;
   overflow-wrap: anywhere;
 }
 
@@ -76,30 +111,73 @@
   outline: none;
 }
 
+.next__card--empty .next__step {
+  font-size: var(--text-mega);
+  max-width: 14ch;
+}
+
+.next__scribble {
+  width: min(22rem, 70%);
+  height: 22px;
+  color: var(--accent);
+  margin-top: calc(var(--space-3) * -1);
+}
+
 .next__meta {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: center;
+  margin-top: var(--space-2);
 }
 
 .next__stretch {
   padding: var(--space-3) var(--space-4);
-  border-left: 4px solid var(--energy-medium);
+  border: 2px dashed var(--ink);
   background: var(--energy-medium-wash);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--on-block);
+  border-radius: var(--radius-sm);
   max-width: 60ch;
 }
+
+/* Rubber stamps that fade in while dragging. */
+.next__stamp {
+  position: absolute;
+  top: 1.6rem;
+  padding: 0.1em 0.5em;
+  border: 4px solid currentColor;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 2;
+  background: var(--paper-raised);
+}
+
+.next__stamp--done {
+  left: 1.4rem;
+  color: var(--done);
+  transform: rotate(-12deg);
+}
+
+.next__stamp--skip {
+  right: 1.4rem;
+  color: var(--energy-high);
+  transform: rotate(10deg);
+}
+
+/* ---------- Actions ---------- */
 
 .next__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-top: var(--space-2);
 }
 
 .btn--big {
-  min-height: 56px;
+  min-height: 58px;
   padding-inline: var(--space-5);
   font-size: var(--text-lg);
 }
@@ -108,21 +186,43 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-2);
-  margin-left: calc(var(--space-4) * -1);
+  margin-left: calc(var(--space-3) * -1);
 }
 
-.next--empty .next__step {
-  font-size: var(--text-xl);
+.next__swipe-hint {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  font-style: italic;
 }
 
 @media (max-width: 520px) {
-  .next::after {
-    display: none;
+  .deck {
+    padding: 0 12px 16px 0;
   }
-  .next::before {
-    transform: translate(6px, 8px) rotate(1deg);
+  .deck__sheet {
+    inset: 0 12px 16px 0;
+  }
+  .deck__sheet--1 {
+    transform: translate(5px, 8px) rotate(0.6deg);
+  }
+  .deck__sheet--2 {
+    transform: translate(9px, 16px) rotate(1.1deg);
+  }
+  .next__card {
+    min-height: 0;
+  }
+  .next__count {
+    width: 3.4rem;
+    height: 3.4rem;
+    font-size: 1.3rem;
   }
   .next__actions .btn {
     flex: 1 1 8rem;
+  }
+}
+
+@media (hover: none) {
+  .next__swipe-hint {
+    font-style: normal;
   }
 }

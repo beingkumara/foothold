@@ -17,6 +17,7 @@
   "dependencies": {
     "@fontsource-variable/fraunces": "5.2.6",
     "@fontsource/atkinson-hyperlegible": "5.2.6",
+    "motion": "14.1.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zod": "3.25.67"

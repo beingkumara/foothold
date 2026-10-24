@@ -35,7 +35,8 @@ Accessibility was part of the design from the start, not added at the end:
 - **Reading-comfort spacing** adds letter, word, and line spacing. We chose this instead of a "dyslexia font", because the evidence for spacing is stronger. The layout also holds up under the full WCAG 1.4.12 text-spacing overrides, which is tested automatically.
 - Text size goes up to **150%**, with **no horizontal scroll at 320px** (WCAG 1.4.10). This is tested automatically.
 - **High-contrast mode** works in light and dark, alongside light, dark, and system themes.
-- **Reduced motion** follows your OS setting and also has its own toggle.
+- **Reduced motion** follows your OS setting live and also has its own toggle. Card flings, the confetti burst, and the breathing blob are all switched off.
+- **Every gesture has a button** (WCAG 2.5.7). The focus-mode breathing animation stops whenever you pause (WCAG 2.2.2).
 - **Screen readers:** every action is announced through ARIA live regions. Dialogs use native `<dialog>`, so they trap focus, close on Escape, and return focus to where you were.
 - **Keyboard-first:** a skip link, strong focus rings, and focus that stays on the button when the step changes, so you can press Done, Done, Done.
 - Single-key shortcuts never fire while you type, and **you can switch them off** for speech-control users (WCAG 2.1.4).
@@ -45,13 +46,14 @@ Accessibility was part of the design from the start, not added at the end:
 
 ## How we built it
 
-- **React 19, TypeScript (strict), and Vite.** 87 KB of JS gzipped, with fonts self-hosted. There is no backend.
+- **React 19, TypeScript (strict), and Vite**, with **Motion** for spring physics, drag gestures, and layout animations. 133 KB of JS gzipped, with fonts self-hosted. There is no backend.
+- **A neo-brutalist zine look:** thick ink, hard offset shadows, rotated stickers, and wonky Fraunces type. Your next step sits on a physical deck of cards: fling it right for done or left for not now, watch it shrink when you're stuck, and get a confetti burst when you finish.
 - **An offline breakdown engine** (`src/lib/breakdown.ts`) with templates for writing, study, email, cleaning, admin and forms, calls, shopping, code, exercise, cooking, and laundry. A general fallback weaves your own words into the steps.
 - **A next-step picker** (`pickNextStep`) that ranks tasks pinned to today first, then tasks already in progress (to protect momentum), then the oldest. It returns the first step that fits your energy. If nothing fits, it offers the gentlest step and tells you openly that it's a stretch.
 - **An immutable reducer** for state, persisted to localStorage and **validated with zod** on load and on backup import.
 - **Optional Claude integration** called directly from the browser with your own key. The model's JSON output is validated with zod, calls time out after 15 seconds, at most 8 calls run in parallel, and the app falls back to the offline engine automatically.
 - **A production Content-Security-Policy** that only allows network requests to the app itself and `api.anthropic.com`.
-- **Testing:** 53 unit tests (Vitest, about 97% coverage of logic, state, and hooks) and 20 Playwright end-to-end tests on desktop and mobile, including axe scans, keyboard flows, persistence, and reflow at 320px.
+- **Testing:** 53 unit tests (Vitest, about 97% coverage of logic, state, and hooks) and 29 Playwright end-to-end runs on desktop and mobile, including axe scans, keyboard flows, swipe gestures, reduced motion, persistence, and reflow at 320px.
 - **CI/CD:** GitHub Actions runs the tests and deploys to GitHub Pages.
 
 ## Challenges we ran into

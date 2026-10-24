@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import type { Task } from '../../lib/types';
 import { TaskCard } from './TaskCard';
 import './task-list.css';
@@ -15,16 +16,25 @@ export function TaskList({ tasks, onToggleStep, onToggleToday, onRemove }: TaskL
 
   const render = (list: readonly Task[]) => (
     <ul className="task-list" role="list">
-      {list.map((task) => (
-        <li key={task.id}>
+      <AnimatePresence initial={false}>
+      {list.map((task, i) => (
+        <motion.li
+          key={task.id}
+          layout
+          initial={{ opacity: 0, y: 24, rotate: i % 2 ? 1.5 : -1.5 }}
+          animate={{ opacity: 1, y: 0, rotate: 0 }}
+          exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.18 } }}
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+        >
           <TaskCard
             task={task}
             onToggleStep={(stepId, done) => onToggleStep(task.id, stepId, done)}
             onToggleToday={() => onToggleToday(task.id)}
             onRemove={() => onRemove(task.id)}
           />
-        </li>
+        </motion.li>
       ))}
+      </AnimatePresence>
     </ul>
   );
 

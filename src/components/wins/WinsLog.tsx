@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'motion/react';
 import type { Win } from '../../lib/types';
 import { winsToday } from '../../state/tasks';
 import './wins.css';
@@ -17,7 +18,20 @@ export function WinsLog({ wins, now }: WinsLogProps) {
   return (
     <section className="wins" aria-labelledby="wins-heading">
       <h2 id="wins-heading" className="wins__heading">
-        <span className="wins__count">{today}</span>
+        <span className="wins__count-wrap">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={today}
+              className="wins__count"
+              initial={{ y: -40, scale: 1.6, rotate: -14, opacity: 0 }}
+              animate={{ y: 0, scale: 1, rotate: -4, opacity: 1 }}
+              exit={{ y: 30, opacity: 0, transition: { duration: 0.15 } }}
+              transition={{ type: 'spring', stiffness: 520, damping: 16 }}
+            >
+              {today}
+            </motion.span>
+          </AnimatePresence>
+        </span>
         <span>{today === 1 ? 'small win today' : 'small wins today'}</span>
       </h2>
       {wins.length === 0 ? (
@@ -25,10 +39,17 @@ export function WinsLog({ wins, now }: WinsLogProps) {
       ) : (
         <ol className="wins__list">
           {wins.slice(0, MAX_SHOWN).map((win) => (
-            <li key={win.id} className={win.text.startsWith('Finished:') ? 'is-task' : undefined}>
+            <motion.li
+              key={win.id}
+              layout="position"
+              initial={{ x: -24, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              className={win.text.startsWith('Finished:') ? 'is-task' : undefined}
+            >
               <time dateTime={new Date(win.at).toISOString()}>{timeOf(win.at)}</time>
               <span>{win.text}</span>
-            </li>
+            </motion.li>
           ))}
         </ol>
       )}

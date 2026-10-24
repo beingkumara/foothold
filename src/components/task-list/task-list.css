@@ -17,10 +17,18 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
-  border: var(--border-w) solid var(--rule);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-md);
   background: var(--paper-raised);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--hard-2);
+}
+
+.task-list > li:nth-child(3n + 2) .task {
+  border-radius: 4px 18px 4px 18px;
+}
+
+.task-list > li:nth-child(3n) .task {
+  border-radius: 18px 4px 18px 4px;
 }
 
 .task--done {
@@ -45,18 +53,18 @@
 
 .task__bar {
   display: inline-block;
-  width: 64px;
-  height: 8px;
-  border-radius: 4px;
+  width: 72px;
+  height: 12px;
+  border-radius: 3px;
   background: var(--paper-sunk);
-  border: 1px solid var(--rule);
+  border: 2px solid var(--ink);
   overflow: hidden;
 }
 
 .task__bar span {
   display: block;
   height: 100%;
-  background: var(--done);
+  background: repeating-linear-gradient(-45deg, var(--done) 0 4px, var(--energy-low-wash) 4px 8px);
   transform-origin: left;
   transition: transform var(--duration-normal) var(--ease-out-expo);
 }
@@ -82,7 +90,7 @@
   display: grid;
   gap: 2px;
   padding: var(--space-2) 0;
-  border-top: 1px solid var(--rule);
+  border-top: 2px dotted var(--rule);
 }
 
 .task__step-label {

@@ -32,6 +32,20 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* Halftone dots bleeding in from the corners, like a photocopied zine. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 0 0, var(--halftone) 1.6px, transparent 2px) 0 0 / 14px 14px,
+    radial-gradient(circle at 0 0, var(--halftone) 1.6px, transparent 2px) 7px 7px / 14px 14px;
+  mask-image: radial-gradient(ellipse 60% 55% at 100% 0%, #000 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 0% 100%, #000 0%, transparent 70%);
+}
+
 #root {
   position: relative;
   z-index: 1;
@@ -41,8 +55,8 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
-  font-variation-settings: 'SOFT' 100, 'WONK' 0;
-  font-weight: 560;
+  font-variation-settings: 'WONK' 1;
+  font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.01em;
   margin: 0;
@@ -106,7 +120,8 @@ a {
 .btn {
   --btn-bg: var(--paper-raised);
   --btn-fg: var(--ink);
-  --btn-border: var(--rule-strong);
+  --btn-border: var(--ink);
+  --btn-shadow: var(--shadow-ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -114,7 +129,7 @@ a {
   min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border: var(--border-w) solid var(--btn-border);
-  border-radius: 999px;
+  border-radius: 12px 12px 12px 3px;
   background: var(--btn-bg);
   color: var(--btn-fg);
   font-weight: 700;
@@ -122,17 +137,18 @@ a {
   transition:
     transform var(--duration-fast) var(--ease-out-expo),
     box-shadow var(--duration-fast) var(--ease-out-expo);
-  box-shadow: 0 2px 0 var(--btn-border);
+  box-shadow: 4px 4px 0 var(--btn-shadow);
 }
 
 .btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 0 var(--btn-border);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--btn-shadow);
 }
 
+/* Pressing pushes the button into its own shadow. */
 .btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 0 0 var(--btn-border);
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--btn-shadow);
 }
 
 .btn:disabled {
@@ -144,12 +160,17 @@ a {
 .btn--primary {
   --btn-bg: var(--accent);
   --btn-fg: var(--accent-ink);
-  --btn-border: color-mix(in oklch, var(--accent) 70%, black);
+}
+
+.btn--done {
+  --btn-bg: var(--energy-low-wash);
+  --btn-fg: var(--on-block);
 }
 
 .btn--quiet {
   --btn-bg: transparent;
   --btn-border: transparent;
+  border-radius: 6px;
   box-shadow: none;
   text-decoration: underline;
   text-underline-offset: 0.25em;
@@ -159,7 +180,9 @@ a {
 .btn--quiet:hover,
 .btn--quiet:active {
   box-shadow: none;
+  transform: none;
   background: var(--paper-sunk);
+  text-decoration-color: var(--ink);
 }
 
 .btn--icon {
@@ -187,26 +210,40 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
-  padding: 0.1em 0.65em;
-  border-radius: 999px;
+  padding: 0.05em 0.6em;
+  border-radius: 4px;
   font-size: var(--text-sm);
   font-weight: 700;
-  border: 1px solid currentColor;
+  color: var(--on-block);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
 }
 
 .energy-chip[data-energy='low'] {
-  color: var(--energy-low);
   background: var(--energy-low-wash);
 }
 
 .energy-chip[data-energy='medium'] {
-  color: var(--energy-medium);
   background: var(--energy-medium-wash);
 }
 
 .energy-chip[data-energy='high'] {
-  color: var(--energy-high);
   background: var(--energy-high-wash);
+}
+
+/* A rotated, taped-on label. */
+.sticker {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border: 2px solid var(--ink);
+  background: var(--energy-medium-wash);
+  color: var(--on-block);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-2.5deg);
+  box-shadow: 2px 2px 0 var(--shadow-ink);
 }
 
 .time-chip {
@@ -262,3 +299,6 @@ a {
   animation-iteration-count: 1 !important;
   transition-duration: 1ms !important;
 }
+
+/* Motion (JS) honours reduced motion via MotionConfig; this keeps CSS-only
+   effects in step with the in-app toggle too. */

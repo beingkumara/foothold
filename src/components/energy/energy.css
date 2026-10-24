@@ -6,46 +6,59 @@
 }
 
 .energy-picker__legend {
-  font-weight: 700;
-  margin-bottom: var(--space-2);
+  font-family: var(--font-display);
+  font-variation-settings: 'WONK' 1;
+  font-size: var(--text-lg);
+  font-weight: 760;
+  margin-bottom: var(--space-3);
   padding: 0;
 }
 
 .energy-picker__options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .energy-picker__option {
-  --tone: var(--energy-medium);
-  --wash: var(--energy-medium-wash);
+  --block: var(--energy-medium-wash);
   position: relative;
+  isolation: isolate;
   display: grid;
   gap: 2px;
   padding: var(--space-3);
-  border: var(--border-w) solid var(--rule);
+  border: var(--border-w) solid var(--ink);
   border-radius: var(--radius-md);
   background: var(--paper-raised);
   cursor: pointer;
+  box-shadow: var(--hard-1);
   transition:
     transform var(--duration-fast) var(--ease-out-expo),
-    border-color var(--duration-fast);
+    box-shadow var(--duration-fast) var(--ease-out-expo);
 }
 
 .energy-picker__option[data-energy='low'] {
-  --tone: var(--energy-low);
-  --wash: var(--energy-low-wash);
+  --block: var(--energy-low-wash);
+  border-radius: 14px 4px 14px 14px;
 }
 
 .energy-picker__option[data-energy='high'] {
-  --tone: var(--energy-high);
-  --wash: var(--energy-high-wash);
+  --block: var(--energy-high-wash);
+  border-radius: 4px 14px 14px 14px;
 }
 
 .energy-picker__option:hover {
-  transform: translateY(-2px);
-  border-color: var(--tone);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--shadow-ink);
+}
+
+/* The colour block that springs between options. */
+.energy-picker__active {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--block);
 }
 
 .energy-picker__option input {
@@ -58,13 +71,17 @@
 
 .energy-picker__option:has(input:focus-visible) {
   outline: 3px solid var(--focus-ring);
-  outline-offset: 3px;
+  outline-offset: 4px;
 }
 
 .energy-picker__option:has(input:checked) {
-  border-color: var(--tone);
-  background: var(--wash);
-  box-shadow: inset 0 0 0 1.5px var(--tone);
+  transform: translate(2px, 2px) rotate(-1deg);
+  box-shadow: 1px 1px 0 var(--shadow-ink);
+}
+
+.energy-picker__option:has(input:checked) .energy-picker__label,
+.energy-picker__option:has(input:checked) .energy-picker__hint {
+  color: var(--on-block);
 }
 
 .energy-picker__option:has(input:checked) .energy-picker__label::after {
@@ -74,19 +91,20 @@
 
 .energy-picker__meter {
   display: flex;
-  gap: 3px;
-  margin-bottom: 2px;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 
 .energy-picker__meter span {
-  width: 14px;
-  height: 6px;
-  border-radius: 3px;
-  border: 1px solid var(--tone);
+  width: 16px;
+  height: 8px;
+  border-radius: 2px;
+  border: 2px solid var(--ink);
+  transform-origin: bottom;
 }
 
 .energy-picker__meter .is-filled {
-  background: var(--tone);
+  background: var(--ink);
 }
 
 .energy-picker__label {

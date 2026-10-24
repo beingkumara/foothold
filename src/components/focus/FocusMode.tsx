@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import { formatClock, formatMinutes, spokenDuration } from '../../lib/format';
 import { playChime } from '../../lib/chime';
@@ -56,6 +57,13 @@ function FocusBody({ taskTitle, step, sound, onDone, onStuck, onClose }: FocusBo
 
   return (
     <div className="focus">
+      {/* Slow 8s breathing cycle: in for 4, out for 4. Stops whenever the timer is paused. */}
+      <motion.div
+        className="focus__breath"
+        aria-hidden="true"
+        animate={timer.running ? { scale: [1, 1.18, 1], rotate: [0, 8, 0] } : { scale: 1, rotate: 0 }}
+        transition={timer.running ? { duration: 8, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.6 }}
+      />
       <p className="focus__context">
         Working on <strong>{taskTitle}</strong>
       </p>

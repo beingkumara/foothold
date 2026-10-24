@@ -1,4 +1,6 @@
 .focus {
+  position: relative;
+  isolation: isolate;
   align-self: center;
   justify-self: center;
   width: min(900px, 100%);
@@ -14,10 +16,11 @@
 
 .focus__step {
   font-family: var(--font-display);
-  font-variation-settings: 'SOFT' 100;
-  font-size: calc(var(--text-hero) * 1.15);
-  line-height: 1.05;
-  font-weight: 520;
+  font-variation-settings: 'WONK' 1;
+  font-size: var(--text-mega);
+  line-height: 1;
+  font-weight: 780;
+  letter-spacing: -0.03em;
   text-wrap: balance;
   overflow-wrap: anywhere;
 }
@@ -32,9 +35,10 @@
 }
 
 .focus__track {
-  height: 14px;
-  border-radius: 7px;
-  border: var(--border-w) solid var(--rule-strong);
+  height: 22px;
+  border-radius: 4px;
+  border: var(--border-heavy) solid var(--ink);
+  box-shadow: var(--hard-1);
   background: var(--paper-raised);
   overflow: hidden;
 }
@@ -42,7 +46,8 @@
 .focus__track span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--energy-low), var(--done));
+  background: repeating-linear-gradient(-45deg, var(--energy-low-wash) 0 10px, var(--done) 10px 20px);
+  border-right: var(--border-w) solid var(--ink);
   transform-origin: left;
   transition: transform 300ms linear;
 }
@@ -68,4 +73,18 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: center;
+}
+
+.focus__breath {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: min(70vw, 620px);
+  aspect-ratio: 1;
+  margin: calc(min(70vw, 620px) / -2) 0 0 calc(min(70vw, 620px) / -2);
+  border: var(--border-heavy) solid var(--ink);
+  border-radius: 46% 54% 58% 42% / 44% 46% 54% 56%;
+  background: var(--energy-low-wash);
+  opacity: 0.55;
 }

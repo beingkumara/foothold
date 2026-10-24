@@ -5,10 +5,25 @@ const hero = (page: Page) => page.locator('#next-heading');
 
 async function addExample(page: Page, name = 'Clean the kitchen') {
   await page.getByRole('button', { name }).click();
-  await expect(hero(page)).not.toContainText('Nothing to do yet');
+  await expect(hero(page)).not.toContainText("What's one thing");
+}
+
+// Contrast must be judged at rest, not halfway through a fade-in.
+// (Polls via evaluate: the production CSP blocks the eval that waitForFunction needs.)
+async function settle(page: Page) {
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          document.getAnimations().every((a) => a.playState !== 'running') &&
+          [...document.querySelectorAll<HTMLElement>('.next__card, .next__card *:not(.next__stamp)')].every((el) => getComputedStyle(el).opacity === '1'),
+      ),
+    )
+    .toBe(true);
 }
 
 async function expectNoA11yViolations(page: Page) {
+  await settle(page);
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
   expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
 }
@@ -21,7 +36,7 @@ test.beforeEach(async ({ page }) => {
 
 test('first visit shows a calm empty state and examples', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Foothold' })).toBeVisible();
-  await expect(hero(page)).toContainText('Nothing to do yet');
+  await expect(hero(page)).toContainText("What's one thing");
   await expect(page.getByRole('button', { name: 'Clean the kitchen' })).toBeVisible();
 });
 
@@ -150,4 +165,41 @@ test('survives WCAG 1.4.12 text-spacing overrides at 320px', async ({ page }) =>
   });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(0);
+});
+
+async function fling(page: Page, dx: number) {
+  await settle(page);
+  const box = await page.locator('.next__card:has(#next-heading)').boundingBox();
+  if (!box) throw new Error('no card');
+  const y = box.y + box.height / 2;
+  await page.mouse.move(box.x + box.width / 2, y);
+  await page.mouse.down();
+  // Paced one move per frame, like a real hand; gesture velocity needs frame timing.
+  for (let i = 1; i <= 8; i++) {
+    await page.mouse.move(box.x + box.width / 2 + (dx * i) / 8, y);
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+  }
+  await page.mouse.up();
+}
+
+test('flinging the card right marks it done, left sets it aside', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'mouse drag is exercised on desktop');
+  await addExample(page);
+  const first = (await hero(page).textContent()) ?? '';
+  await fling(page, 260);
+  await expect(page.getByRole('heading', { name: /1 small win today/ })).toBeVisible();
+  await expect(hero(page)).not.toHaveText(first);
+
+  const second = (await hero(page).textContent()) ?? '';
+  await fling(page, -260);
+  await expect(hero(page)).not.toHaveText(second);
+  await expect(page.getByRole('heading', { name: /1 small win today/ })).toBeVisible();
+});
+
+test('everything still works with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await addExample(page);
+  await page.getByRole('button', { name: /^Done/ }).click();
+  await expect(page.getByRole('heading', { name: /1 small win today/ })).toBeVisible();
+  await expect(page.locator('.burst')).toHaveCount(0);
 });
